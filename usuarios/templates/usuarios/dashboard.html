@@ -1,0 +1,99 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Meus Protocolos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Cabeçalho do Dashboard -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1>Bem-vindo, {{ user.nome }}</h1>
+            <a href="{% url 'usuarios:logout' %}" class="btn btn-danger">Sair</a>
+        </div>
+    </div>
+    
+    <!-- Linha de Ações: Lançar Novo Protocolo e Pesquisa de Protocolos -->
+    <div class="row mt-4">
+        <div class="d-flex flex-column flex-md-row justify-content-center gap-2 mt-3">
+            <a href="{% url 'protocolos:lancar_protocolo' %}" class="btn btn-success">Lançar Novo Protocolo</a>
+            <a href="{% url 'protocolos:pesquisa_protocolos' %}" class="btn btn-primary">Pesquisa de Protocolos</a>
+        </div>
+    </div>
+
+    <!-- Card de Dados da Empresa (apenas para usuários PJ) -->
+    {% if user.tipo == "PJ" and user.perfil %}
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header text-center">
+                    <strong>Dados da Empresa</strong>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Nome da Empresa:</strong> {{ user.perfil.nome_empresa }}</p>
+                    <p class="mb-0"><strong>CNPJ:</strong> {{ user.perfil.cnpj }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Card de Meus Protocolos -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <strong>Meus Protocolos</strong>
+                </div>
+                <div class="card-body">
+                    {% if protocolos_usuario %}
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Descrição</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for protocolo in protocolos_usuario|slice:":5" %}
+                            <tr>
+                                <td>{{ protocolo.numero }}</td>
+                                <td>{{ protocolo.descricao }}</td>
+                                <td>{{ protocolo.status }}</td>
+                                <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        {% if protocolo.status == 'pendente' %}
+                                            <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Corrigir</a>
+                                            <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                            </form>
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-center">Você ainda não lançou nenhum protocolo.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botão Atualizar Página -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Atualizar Página</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

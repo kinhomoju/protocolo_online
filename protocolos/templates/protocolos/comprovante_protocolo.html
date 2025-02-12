@@ -1,0 +1,28 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block title %}Comprovante do Protocolo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card mx-auto" style="max-width: 600px;">
+        <div class="card-header text-center">
+            <h2>Comprovante do Protocolo</h2>
+        </div>
+        <div class="card-body">
+            <p class="mb-2"><strong>Número do Protocolo:</strong> {{ protocolo.numero }}</p>
+            <p class="mb-2"><strong>Descrição:</strong> {{ protocolo.descricao }}</p>
+            <p class="mb-2"><strong>Data de Lançamento:</strong> {{ protocolo.data_criacao|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="card-footer text-center">
+            <!-- Botão para voltar para a página principal do sistema -->
+            {% if user.is_master %}
+                <a href="{% url 'usuarios:dashboard_master' %}" class="btn btn-secondary">Voltar a tela inicial</a>
+            {% else %}
+                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Voltar a tela inicial</a>
+            {% endif %}
+            <button type="button" class="btn btn-primary" onclick="window.print();">Imprimir Comprovante</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

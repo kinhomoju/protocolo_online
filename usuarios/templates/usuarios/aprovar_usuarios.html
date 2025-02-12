@@ -1,0 +1,112 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block title %}Aprovação de Usuários{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card mx-auto" style="max-width: 900px;">
+        <div class="card-header text-center">
+            <h2>Aprovação de Usuários</h2>
+        </div>
+        <div class="card-body">
+            {% if usuarios_pendentes %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Opções de Cadastro</th>
+                            <th class="text-center">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios_pendentes %}
+                        <tr>
+                            <td>{{ usuario.nome }}</td>
+                            <td>{{ usuario.username }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>
+                                <!-- Formulário com opções de cadastro -->
+                                <form method="post" id="form_{{ usuario.id }}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="user_id" value="{{ usuario.id }}">
+
+                                    <!-- Escolher Origem do Cadastro -->
+                                    <div class="mb-2">
+                                        <label class="form-label">Origem do Cadastro:</label><br>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="cadastro_origem" id="origem_pj_{{ usuario.id }}" value="PJ" required>
+                                            <label class="form-check-label" for="origem_pj_{{ usuario.id }}">Externo (Empresa)</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="cadastro_origem" id="origem_pf_{{ usuario.id }}" value="PF" required>
+                                            <label class="form-check-label" for="origem_pf_{{ usuario.id }}">Interno (Servidor)</label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Seção para escolher o nível (somente para Interno) -->
+                                    <div class="mb-2" id="nivel_section_{{ usuario.id }}">
+                                        <label class="form-label">Nível (somente para Interno):</label><br>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="nivel" id="nivel_master_{{ usuario.id }}" value="M" required>
+                                            <label class="form-check-label" for="nivel_master_{{ usuario.id }}">Master</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="nivel" id="nivel_normal_{{ usuario.id }}" value="N" required checked>
+                                            <label class="form-check-label" for="nivel_normal_{{ usuario.id }}">Normal</label>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                            <td class="text-center">
+                                <!-- Botões de Aprovar e Rejeitar -->
+                                <div class="d-grid gap-2">
+                                    <button type="submit" form="form_{{ usuario.id }}" name="approval_status" value="aprovar" class="btn btn-success btn-sm w-100">Aprovar</button>
+                                    <button type="submit" form="form_{{ usuario.id }}" name="approval_status" value="rejeitar" class="btn btn-danger btn-sm w-100">Rejeitar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-center">Nenhum usuário pendente para aprovação.</p>
+            {% endif %}
+        </div>
+
+        <div class="card-footer text-center">
+            <a href="{% url 'usuarios:dashboard_master' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+</div>
+
+<!-- Script para controlar a exibição da seção "Nível" -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% for usuario in usuarios_pendentes %}
+        (function() {
+            var origemPJ = document.getElementById('origem_pj_{{ usuario.id }}');
+            var origemPF = document.getElementById('origem_pf_{{ usuario.id }}');
+            var nivelSection = document.getElementById('nivel_section_{{ usuario.id }}');
+
+            function updateNivelVisibility() {
+                if (origemPJ.checked) {
+                    nivelSection.style.display = 'none';
+                } else {
+                    nivelSection.style.display = 'block';
+                }
+            }
+            if (origemPJ) {
+                origemPJ.addEventListener('change', updateNivelVisibility);
+            }
+            if (origemPF) {
+                origemPF.addEventListener('change', updateNivelVisibility);
+            }
+            updateNivelVisibility();
+        })();
+    {% endfor %}
+});
+</script>
+{% endblock %}

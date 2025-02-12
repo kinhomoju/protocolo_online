@@ -1,0 +1,16 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block title %}Visualizar Protocolo{% endblock %}
+
+{% block content %}
+<div class="container mt-4 text-center">
+    <h2>Protocolo Lançado</h2>
+    <p>O novo protocolo foi criado com sucesso!</p>
+    <p><strong>Número do Protocolo: {{ protocolo.numero }}</strong></p>
+    <!-- Exibir outras informações, se desejado -->
+    <div class="mt-4">
+        <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Voltar ao Dashboard</a>
+    </div>
+</div>
+{% endblock %}

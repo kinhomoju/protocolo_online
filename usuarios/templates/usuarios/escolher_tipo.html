@@ -1,0 +1,19 @@
+{% extends 'base_generic.html' %}
+{% block title %}Escolha o Tipo de Cadastro{% endblock %}
+{% block content %}
+<div class="container mt-4 text-center">
+    <h2>Escolha o Tipo de Cadastro</h2>
+    <form method="post" action="{% url 'usuarios:completar_cadastro' %}">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label class="form-check-label me-3">
+                <input type="radio" name="tipo" value="PJ" required> Pessoa Jurídica (PJ)
+            </label>
+            <label class="form-check-label">
+                <input type="radio" name="tipo" value="PF" required> Pessoa Física (PF)
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary">Continuar</button>
+    </form>
+</div>
+{% endblock %}

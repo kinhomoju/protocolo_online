@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SisPro{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="icon" type="image/png" href="{% static 'geral/img/favicon-32x32.png' %}">
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header class="bg-primary text-white text-center p-3">
+        <h1>SisPro - Sistema de Protocolo Online</h1>
+    </header>
+
+    <div class="container mt-4">
+        <!-- Bloco de Conteúdo, será substituído pelo conteúdo específico de cada página -->
+        {% block content %}
+        <!-- O conteúdo específico de cada página será carregado aqui -->
+        {% endblock %}
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="bg-dark text-white text-center p-3 mt-5">
+        <p>&copy; 2025 Prefeitura Municipal de Moju - Todos os direitos reservados</p>
+    </footer>
+
+    <!-- Scripts do Bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

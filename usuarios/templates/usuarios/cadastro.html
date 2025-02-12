@@ -1,0 +1,52 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Informações da empresa -->
+    <div class="text-center mb-4">
+        <img src="{% static 'geral/img/BrasaoPMM_novo_menor.png' %}" alt="Prefeitura Municipal de Moju" class="img-fluid" style="max-width: 100px;">
+        <h2 class="mt-3">Bem-vindo ao Sistema de Protocolo Online</h2>
+        <p class="text-muted">
+            O sistema de protocolo online da <strong>Prefeitura de Moju</strong> permite que você gerencie suas solicitações e acompanhe o andamento dos processos de forma prática e segura.
+        </p>
+    </div>
+
+    <!-- Informações sobre o cadastro -->
+    <div class="alert alert-info text-center">
+        <p>Preencha os campos abaixo para criar uma conta no sistema.</p>
+        <hr>
+        <p>
+            Após o cadastro, sua conta será analisada por um administrador. Você receberá um e-mail assim que for aprovada.
+        </p>
+    </div>
+
+    <!-- Exibição de mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulário de cadastro -->
+    <form method="post" class="bg-light p-4 rounded shadow-sm">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Cadastrar</button>
+    </form>
+
+    <!-- Link para voltar -->
+    <div class="text-center mt-3">
+        Já tem uma conta? <a href="{% url 'usuarios:login' %}">Faça login</a>
+    </div>
+
+    <!-- Informações adicionais -->
+    <div class="mt-5 text-center text-muted">
+        <p>
+            <strong>Prefeitura de Moju</strong> - Protocolo Online<br>
+            Pça. Divino Espírito Santo, 100 - Centro, Moju/PA<br>
+            Telefone: (91) 3756-1227 | E-mail: financas@moju.pa.gov.br
+        </p>
+    </div>
+</div>
+{% endblock %}

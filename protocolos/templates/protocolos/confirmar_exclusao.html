@@ -1,0 +1,16 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block title %}Confirmar Exclusão{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Confirmar Exclusão do Protocolo</h2>
+    <p class="text-center">Tem certeza de que deseja excluir o protocolo <strong>{{ protocolo.numero }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+        <a href="{% url 'protocolos:pesquisa_protocolos' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
