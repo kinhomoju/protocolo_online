@@ -10,92 +10,87 @@
             <h2>Excluir Usuários</h2>
         </div>
         <div class="card-body">
-            {% if usuarios %}
+            {% if usuarios_paginados %}
                 <table class="table table-bordered">
                     <thead>
                         <tr>
                             <th>Nome</th>
                             <th>Usuário</th>
                             <th>Email</th>
-                            <th>Informações</th>
                             <th class="text-center">Ação</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for usuario in usuarios %}
+                        {% for usuario in usuarios_paginados %}
                         <tr>
                             <td>{{ usuario.nome }}</td>
                             <td>{{ usuario.username }}</td>
                             <td>{{ usuario.email }}</td>
-                            <td>
-                                {% if usuario.tipo == "PF" and usuario.perfil %}
-                                    Secretaria: {{ usuario.perfil.secretaria }}
-                                {% elif usuario.tipo == "PJ" and usuario.perfil %}
-                                    Empresa: {{ usuario.perfil.nome_empresa }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
                             <td class="text-center">
-                                <!-- Formulário de exclusão -->
-                                <form method="post" action="{% url 'usuarios:excluir_usuario' user_id=usuario.id %}" id="deleteForm_{{ usuario.id }}">
-                                    {% csrf_token %}
-                                    <!-- Botão que dispara o modal -->
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDeletion('{{ usuario.id }}', '{{ usuario.nome }}')">
-                                        Excluir
-                                    </button>
-                                </form>
+                                <!-- Botão de exclusão com modal de confirmação -->
+                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ usuario.id }}">
+                                    Excluir
+                                </button>
+
+                                <!-- Modal de Confirmação -->
+                                <div class="modal fade" id="confirmDeleteModal{{ usuario.id }}" tabindex="-1" aria-labelledby="modalLabel{{ usuario.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="modalLabel{{ usuario.id }}">Confirmar Exclusão</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Tem certeza que deseja excluir o usuário <strong>{{ usuario.nome }}</strong>?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <a href="{% url 'usuarios:excluir_usuario' usuario.id %}" class="btn btn-danger">Excluir</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+
+                <!-- Paginação -->
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if usuarios_paginados.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">Primeira</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ usuarios_paginados.previous_page_number }}">Anterior</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">{{ usuarios_paginados.number }} de {{ usuarios_paginados.paginator.num_pages }}</span>
+                        </li>
+
+                        {% if usuarios_paginados.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ usuarios_paginados.next_page_number }}">Próxima</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ usuarios_paginados.paginator.num_pages }}">Última</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
             {% else %}
                 <p class="text-center">Nenhum usuário disponível para exclusão.</p>
             {% endif %}
         </div>
+
         <div class="card-footer text-center">
             <a href="{% url 'usuarios:dashboard_master' %}" class="btn btn-secondary">Voltar</a>
         </div>
     </div>
 </div>
-
-<!-- Modal de Confirmação -->
-<div class="modal fade" id="confirmDeletionModal" tabindex="-1" aria-labelledby="confirmDeletionModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="confirmDeletionModalLabel">Confirmar Exclusão</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Mensagem com duas linhas -->
-                <p id="modalMessageLine1"></p>
-                <p id="modalMessageLine2" class="mb-0"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="modalConfirmButton">Excluir</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Script para manipular o modal -->
-<script>
-    function confirmDeletion(userId, userName) {
-        // Define as mensagens do modal em duas linhas
-        document.getElementById('modalMessageLine1').innerText = 'Tem certeza de que deseja excluir o usuário';
-        document.getElementById('modalMessageLine2').innerHTML = '<strong style="color: red;">' + userName + '?</strong> Esta ação não poderá ser desfeita.';
-        
-        // Configura o botão de confirmação para submeter o formulário correspondente
-        document.getElementById('modalConfirmButton').onclick = function() {
-            document.getElementById('deleteForm_' + userId).submit();
-        };
-        
-        // Exibe o modal (usando Bootstrap 5)
-        var confirmModal = new bootstrap.Modal(document.getElementById('confirmDeletionModal'));
-        confirmModal.show();
-    }
-</script>
 {% endblock %}

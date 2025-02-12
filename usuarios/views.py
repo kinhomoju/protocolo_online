@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import Usuario, Perfil
 from .forms import UsuarioCadastroForm, PerfilPJForm, PerfilPFForm
 from django import forms
@@ -164,30 +165,31 @@ def aprovar_usuarios(request):
 @login_required
 def excluir_usuarios(request, user_id=None):
     """
-    Exclui um usuário aprovado. Essa view lida com:
-      - Exclusão via rota com parâmetro (user_id passado pela URL)
-      - Exclusão via POST (user_id enviado no corpo da requisição)
+    Lista os usuários aprovados para exclusão com paginação.
     Apenas usuários master podem acessar essa funcionalidade.
     """
-    # Verifica se o usuário logado é master
-    if request.user.is_authenticated and hasattr(request.user, 'is_master') and request.user.is_master:
-        if request.method == 'POST':
-            # Se a rota não passou user_id via URL, tenta pegar do POST
-            if user_id is None:
-                user_id = request.POST.get('user_id')
-            if user_id:
-                usuario = get_object_or_404(Usuario, id=user_id)
-                tipo_usuario = 'Master' if usuario.is_master else 'Usuário Comum'
-                usuario.delete()
-                messages.success(request, f"Usuário '{usuario.nome}' ({tipo_usuario}) excluído com sucesso.")
-            else:
-                messages.error(request, "Erro ao tentar excluir o usuário.")
-            # Após a exclusão, redireciona para a lista (rota sem parâmetro)
-            return redirect('usuarios:excluir_usuarios')
-        else:
-            # Se o método é GET, renderiza o template com a lista de usuários aprovados
-            usuarios = Usuario.objects.filter(is_approved=True)
-            return render(request, 'usuarios/excluir_usuarios.html', {'usuarios': usuarios})
+    if request.user.is_authenticated and request.user.is_master:
+        usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')  # Ordena do mais recente para o mais antigo
+        paginator = Paginator(usuarios, 10)  # Exibir 10 usuários por página
+
+        page_number = request.GET.get('page')
+        usuarios_paginados = paginator.get_page(page_number)
+
+        return render(request, 'usuarios/excluir_usuarios.html', {'usuarios_paginados': usuarios_paginados})
+    
+    return redirect('usuarios:login')
+
+@login_required
+def excluir_usuario(request, user_id):
+    """
+    Exclui um usuário específico se o usuário logado for um master.
+    """
+    if request.user.is_authenticated and request.user.is_master:
+        usuario = get_object_or_404(Usuario, id=user_id)
+        usuario.delete()
+        messages.success(request, f'Usuário {usuario.nome} foi excluído com sucesso.')
+        return redirect('usuarios:excluir_usuarios')
+    
     return redirect('usuarios:login')
 
 # Pesquisa de usuários para o dashboard master
