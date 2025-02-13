@@ -62,7 +62,17 @@
                             <tr>
                                 <td>{{ protocolo.numero }}</td>
                                 <td>{{ protocolo.descricao }}</td>
-                                <td>{{ protocolo.status }}</td>
+                                <td>
+                                    {% if protocolo.status == 'pago' %}
+                                        <span class="badge bg-success">Pago</span>
+                                    {% elif protocolo.status == 'rejeitado' %}
+                                        <span class="badge bg-warning text-dark">Rejeitado</span>
+                                    {% elif protocolo.status == 'analise' %}
+                                        <span class="badge bg-primary">Em análise</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Pendente</span>
+                                    {% endif %}
+                                </td>
                                 <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
                                 <td>
                                     <div class="d-flex gap-2">
@@ -73,7 +83,7 @@
                                                 <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
                                             </form>
                                         {% else %}
-                                            <span class="text-muted">N/A</span>
+                                            <span class="text-muted">tramitado...</span>
                                         {% endif %}
                                     </div>
                                 </td>

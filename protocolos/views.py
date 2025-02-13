@@ -58,25 +58,28 @@ def pesquisa_protocolos(request):
     """
     View para pesquisar protocolos com base no número ou descrição.
     """
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '')  # Obtém o termo de pesquisa
+    page_number = request.GET.get('page')  # Obtém o número da página atual
+    itens_por_pagina = 10  # Número de protocolos por página
+
     if query:
-        # Pesquisa: filtra por número ou descrição
-        protocolos_pesquisa = Protocolo.objects.filter(
+        # Se houver pesquisa, filtra os protocolos pelo número ou descrição
+        protocolos = Protocolo.objects.filter(
             Q(numero__icontains=query) | Q(descricao__icontains=query)
-        )
-        context = {
-            'protocolos_pesquisa': protocolos_pesquisa,
-            'query': query,
-        }
+        ).order_by('-data_criacao')
     else:
-        # Sem pesquisa: exibe os protocolos lançados pelo usuário com paginação
+        # Caso contrário, mostra os últimos protocolos do usuário
         protocolos = Protocolo.objects.filter(usuario=request.user).order_by('-data_criacao')
-        paginator = Paginator(protocolos, 10)
-        page_number = request.GET.get('page')
-        protocolos_recent = paginator.get_page(page_number)
-        context = {
-            'protocolos_recent': protocolos_recent,
-        }
+
+    # Paginação para os protocolos (seja pesquisa ou últimos adicionados)
+    paginator = Paginator(protocolos, itens_por_pagina)
+    protocolos_paginados = paginator.get_page(page_number)
+
+    context = {
+        'protocolos_paginados': protocolos_paginados,  # Mantemos a mesma variável no template
+        'query': query,  # Para manter a pesquisa preenchida no campo do formulário
+    }
+
     return render(request, 'protocolos/pesquisa_protocolos.html', context)
 
 @login_required

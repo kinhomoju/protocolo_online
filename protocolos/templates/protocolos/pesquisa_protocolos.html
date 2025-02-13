@@ -1,158 +1,117 @@
 {% extends 'base_generic.html' %}
-{% load static %}
-
-{% block title %}Pesquisa de Protocolos{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <!-- Card de Pesquisa de Protocolos -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <strong>Pesquisa de Protocolos</strong>
+    <div class="card mx-auto" style="max-width: 900px;">
+        <div class="card-header text-center">
+            <h2>Pesquisa de Protocolos</h2>
         </div>
         <div class="card-body">
-            <form method="get" action="{% url 'protocolos:pesquisa_protocolos' %}">
+            
+            <!-- Formulário de Pesquisa -->
+            <form method="GET" action="{% url 'protocolos:pesquisa_protocolos' %}" class="mb-4">
                 <div class="input-group">
-                    <input type="text" name="q" class="form-control" placeholder="Pesquisar protocolos por número ou descrição" value="{{ query|default:'' }}">
+                    <input type="text" name="q" class="form-control" placeholder="Digite o número ou descrição..." value="{{ query }}">
                     <button type="submit" class="btn btn-primary">Pesquisar</button>
                 </div>
             </form>
-        </div>
-    </div>
 
-    {% if query %}
-        <!-- Card de Resultados da Pesquisa -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <strong>Resultados da Pesquisa</strong>
-            </div>
-            <div class="card-body">
-                {% if protocolos_pesquisa %}
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Número</th>
-                                <th>Descrição</th>
-                                <th>Status</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for protocolo in protocolos_pesquisa %}
-                            <tr>
-                                <td>{{ protocolo.numero }}</td>
-                                <td>{{ protocolo.descricao }}</td>
-                                <td>{{ protocolo.status }}</td>
-                                <td>
-                                    {% if protocolo.status == 'pendente' %}
-                                        <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Editar</a>
-                                        <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                                        </form>
-                                    {% else %}
-                                        <span class="text-muted">Ação não disponível</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p class="mt-3 text-muted">Nenhum protocolo encontrado para a pesquisa.</p>
-                {% endif %}
-            </div>
-        </div>
-    {% else %}
-        <!-- Card de Últimos Protocolos Lançados (com paginação) -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <strong>Últimos Protocolos Lançados</strong>
-            </div>
-            <div class="card-body">
-                {% if protocolos_recent %}
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Número</th>
-                                <th>Descrição</th>
-                                <th>Status</th>
-                                <th>Data</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for protocolo in protocolos_recent %}
-                            <tr>
-                                <td>{{ protocolo.numero }}</td>
-                                <td>{{ protocolo.descricao }}</td>
-                                <td>{{ protocolo.status }}</td>
-                                <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        {% if protocolo.status == 'pendente' %}
-                                            <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Editar</a>
-                                            <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                                            </form>
+            {% if protocolos_paginados %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Resultados da Pesquisa</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Número</th>
+                                    <th>Descrição</th>
+                                    <th>Status</th>
+                                    <th>Data</th>
+                                    <th class="text-center">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for protocolo in protocolos_paginados %}
+                                <tr>
+                                    <td>{{ protocolo.numero }}</td>
+                                    <td>{{ protocolo.descricao }}</td>
+                                    <td>
+                                        {% if protocolo.status == 'pago' %}
+                                            <span class="badge bg-success">Pago</span>
+                                        {% elif protocolo.status == 'rejeitado' %}
+                                            <span class="badge bg-warning text-dark">Rejeitado</span>
+                                        {% elif protocolo.status == 'analise' %}
+                                            <span class="badge bg-primary">Em análise</span>
                                         {% else %}
-                                            <span class="text-muted">Ação não disponível</span>
+                                            <span class="badge bg-secondary">Pendente</span>
                                         {% endif %}
-                                    </div>
-                                </td>                                
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <!-- Navegação de Paginação -->
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center">
-                            {% if protocolos_recent.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ protocolos_recent.previous_page_number }}" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link" aria-hidden="true">&laquo;</span>
-                                </li>
-                            {% endif %}
-                            {% for num in protocolos_recent.paginator.page_range %}
-                                {% if protocolos_recent.number == num %}
-                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                                {% else %}
-                                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                    </td>
+                                    <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            {% if protocolo.status == 'pendente' %}
+                                                <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Corrigir</a>
+                                                <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                                </form>
+                                            {% else %}
+                                                <span class="text-muted">não permitido...</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <!-- Paginação -->
+                        {% if protocolos_paginados.has_other_pages %}
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                {% if protocolos_paginados.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page=1">Primeira</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page={{ protocolos_paginados.previous_page_number }}">Anterior</a>
+                                    </li>
                                 {% endif %}
-                            {% endfor %}
-                            {% if protocolos_recent.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ protocolos_recent.next_page_number }}" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
+
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Página {{ protocolos_paginados.number }} de {{ protocolos_paginados.paginator.num_pages }}
+                                    </span>
                                 </li>
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link" aria-hidden="true">&raquo;</span>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                {% else %}
-                    <p class="text-center">Nenhum protocolo encontrado.</p>
-                {% endif %}
-            </div>
+
+                                {% if protocolos_paginados.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page={{ protocolos_paginados.next_page_number }}">Próxima</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?q={{ query }}&page={{ protocolos_paginados.paginator.num_pages }}">Última</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-center">Nenhum protocolo encontrado.</p>
+            {% endif %}
         </div>
-    {% endif %}
-    
-    <!-- Botão Voltar para a Tela Principal do Sistema -->
-    <div class="text-center mt-4">
-        {% if user.is_master %}
-            <a href="{% url 'usuarios:dashboard_master' %}" class="btn btn-secondary">Voltar</a>
-        {% else %}
-            <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Voltar</a>
-        {% endif %}
+
+        <!-- Botão "Voltar" adaptado ao tipo de usuário -->
+        <div class="card-footer text-center">
+            {% if request.user.is_superuser %}
+                <a href="{% url 'usuarios:dashboard_master' %}" class="btn btn-secondary">Voltar</a>
+            {% else %}
+                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Voltar</a>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

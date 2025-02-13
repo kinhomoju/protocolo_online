@@ -9,7 +9,7 @@ class Protocolo(models.Model):
         ('pago', 'Pago'),
         ('analise', 'Em Análise'),
         ('rejeitado', 'Rejeitado'),
-        ('devolvido', 'Devolvido'),
+        # ('devolvido', 'Devolvido'),
         ('pendente', 'Pendente'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
