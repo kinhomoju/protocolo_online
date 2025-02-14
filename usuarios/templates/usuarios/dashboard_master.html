@@ -107,7 +107,33 @@
                                         <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Editar</a>
                                         <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                            <!-- Botão para abrir o modal -->
+                                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ protocolo.id }}">
+                                                Excluir
+                                            </button>
+
+                                            <!-- Modal de Confirmação -->
+                                            <div class="modal fade" id="confirmarExclusao{{ protocolo.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="exampleModalLabel">Confirmar Exclusão</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            Tem certeza que deseja excluir o protocolo <strong>{{ protocolo.numero }}</strong>?  
+                                                            <p><em>Esta ação não pode ser desfeita.</em></p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                            <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-danger">Excluir</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </form>
                                     {% else %}
                                         <span class="text-muted">Ação não disponível</span>

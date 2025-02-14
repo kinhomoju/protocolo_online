@@ -4,7 +4,7 @@
 {% block title %}Dashboard - Meus Protocolos{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid mt-4">
     <!-- Cabeçalho do Dashboard -->
     <div class="row">
         <div class="col-12 text-center">
@@ -23,8 +23,8 @@
 
     <!-- Card de Dados da Empresa (apenas para usuários PJ) -->
     {% if user.tipo == "PJ" and user.perfil %}
-    <div class="row mt-4">
-        <div class="col-md-6 offset-md-3">
+    <div class="row mt-4 justify-content-center">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header text-center">
                     <strong>Dados da Empresa</strong>
@@ -39,58 +39,86 @@
     {% endif %}
 
     <!-- Card de Meus Protocolos -->
-    <div class="row mt-4">
+    <div class="row mt-4 justify-content-center">
         <div class="col-12">
-            <div class="card">
+            <div class="card overflow-auto">
                 <div class="card-header">
                     <strong>Meus Protocolos</strong>
                 </div>
                 <div class="card-body">
                     {% if protocolos_usuario %}
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Número</th>
-                                <th>Descrição</th>
-                                <th>Status</th>
-                                <th>Data</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for protocolo in protocolos_usuario|slice:":5" %}
-                            <tr>
-                                <td>{{ protocolo.numero }}</td>
-                                <td>{{ protocolo.descricao }}</td>
-                                <td>
-                                    {% if protocolo.status == 'pago' %}
-                                        <span class="badge bg-success">Pago</span>
-                                    {% elif protocolo.status == 'rejeitado' %}
-                                        <span class="badge bg-warning text-dark">Rejeitado</span>
-                                    {% elif protocolo.status == 'analise' %}
-                                        <span class="badge bg-primary">Em análise</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">Pendente</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        {% if protocolo.status == 'pendente' %}
-                                            <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Corrigir</a>
-                                            <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}" class="d-inline">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                                            </form>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Número</th>
+                                    <th>Descrição</th>
+                                    <th>Status</th>
+                                    <th>Data</th>
+                                    <th class="text-center">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for protocolo in protocolos_usuario|slice:":5" %}
+                                <tr>
+                                    <td>{{ protocolo.numero }}</td>
+                                    <td>{{ protocolo.descricao }}</td>
+                                    <td>
+                                        {% if protocolo.status == 'pago' %}
+                                            <span class="badge bg-success">Pago</span>
+                                        {% elif protocolo.status == 'rejeitado' %}
+                                            <span class="badge bg-warning text-dark">Rejeitado</span>
+                                        {% elif protocolo.status == 'analise' %}
+                                            <span class="badge bg-primary">Em análise</span>
                                         {% else %}
-                                            <span class="text-muted">tramitado...</span>
+                                            <span class="badge bg-secondary">Pendente</span>
                                         {% endif %}
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    </td>
+                                    <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            {% if protocolo.status == 'pendente' %}
+                                                <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Corrigir</a>
+                                                <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <!-- Botão para abrir o modal -->
+                                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ protocolo.id }}">
+                                                        Excluir
+                                                    </button>
+
+                                                    <!-- Modal de Confirmação -->
+                                                    <div class="modal fade" id="confirmarExclusao{{ protocolo.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="exampleModalLabel">Confirmar Exclusão</h5>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    Tem certeza que deseja excluir o protocolo <strong>{{ protocolo.numero }}</strong>?  
+                                                                    <p><em>Esta ação não pode ser desfeita.</em></p>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                                    <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}">
+                                                                        {% csrf_token %}
+                                                                        <button type="submit" class="btn btn-danger">Excluir</button>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            {% else %}
+                                                <span class="text-muted">tramitado...</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                     {% else %}
                     <p class="text-center">Você ainda não lançou nenhum protocolo.</p>
                     {% endif %}
