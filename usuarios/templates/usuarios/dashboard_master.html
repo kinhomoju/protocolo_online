@@ -28,105 +28,171 @@
         </a>
     </div>
     
-    <!-- Seção: Pesquisa de Usuários -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <strong>Pesquisa de Usuários</strong>
-        </div>
-        <div class="card-body">
-            <form method="get" action="{% url 'usuarios:pesquisa_usuarios' %}">
-                <div class="input-group">
-                    <input type="text" name="q" class="form-control" placeholder="Pesquisar usuários por nome, username ou email" aria-label="Pesquisar usuários">
-                    <button type="submit" class="btn btn-primary">Pesquisar</button>
+    <!-- Seção de pesquisa -->
+    <div class="row">
+        <!-- Card de Pesquisa de Usuários -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Pesquisa de Usuários</strong>
                 </div>
-            </form>
-            {% if usuarios_pesquisa %}
-                <table class="table table-striped mt-3">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Usuário</th>
-                            <th>Email</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for usuario in usuarios_pesquisa %}
-                        <tr>
-                            <td>{{ usuario.nome }}</td>
-                            <td>{{ usuario.username }}</td>
-                            <td>{{ usuario.email }}</td>
-                            <td>
-                                <form method="post" action="{% url 'usuarios:excluir_usuario' user_id=usuario.id %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                                </form>
-                                <!-- Incluindo o modal de confirmação -->
-                                {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=usuario.id item_nome=usuario.nome excluir_url='usuarios:excluir_usuario' %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% elif request.GET.q %}
-                <p class="mt-3 text-muted">Nenhum usuário encontrado para a pesquisa.</p>
-            {% endif %}
-        </div>
-    </div>
-    
-    <!-- Seção: Pesquisa de Protocolos -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <strong>Pesquisa de Protocolos</strong>
-        </div>
-        <div class="card-body">
-            <form method="get" action="{% url 'protocolos:pesquisa_protocolos' %}">
-                <div class="input-group">
-                    <input type="text" name="q" class="form-control" placeholder="Pesquisar protocolos por número ou descrição" aria-label="Pesquisar protocolos">
-                    <button type="submit" class="btn btn-primary">Pesquisar</button>
-                </div>
-            </form>
-            {% if protocolos_pesquisa %}
-                <table class="table table-striped mt-3">
-                    <thead>
-                        <tr>
-                            <th>Número</th>
-                            <th>Descrição</th>
-                            <th>Status</th>
-                            <th>Data de Criação</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for protocolo in protocolos_pesquisa %}
-                        <tr>
-                            <td>{{ protocolo.numero }}</td>
-                            <td>{{ protocolo.descricao }}</td>
-                            <td>{{ protocolo.status }}</td>
-                            <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    {% if protocolo.status == 'pendente' %}
-                                        <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Editar</a>
-                                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ protocolo.id }}">
-                                            Excluir
-                                        </button>
+                <div class="card-body">
+                    <form method="get" action="{% url 'usuarios:pesquisa_usuarios' %}">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control" placeholder="Pesquisar usuários por nome, username ou email" aria-label="Pesquisar usuários">
+                            <button type="submit" class="btn btn-primary">Pesquisar</button>
+                        </div>
+                    </form>
+                    {% if usuarios_pesquisa %}
+                        <table class="table table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Usuário</th>
+                                    <th>Email</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usuario in usuarios_pesquisa %}
+                                <tr>
+                                    <td>{{ usuario.nome }}</td>
+                                    <td>{{ usuario.username }}</td>
+                                    <td>{{ usuario.email }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'usuarios:excluir_usuario' user_id=usuario.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                        </form>
                                         <!-- Incluindo o modal de confirmação -->
-                                        {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=protocolo.id item_nome=protocolo.numero excluir_url='protocolos:excluir_protocolo' %}
-                                    {% else %}
-                                        <span class="text-muted">Ação não disponível</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% elif request.GET.q %}
-                <p class="mt-3 text-muted">Nenhum protocolo encontrado para a pesquisa.</p>
-            {% endif %}
+                                        {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=usuario.id item_nome=usuario.nome excluir_url='usuarios:excluir_usuario' %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Paginação -->
+                        <nav>
+                            <ul class="pagination">
+                                {% if usuarios_pesquisa.has_previous %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ usuarios_pesquisa.previous_page_number }}">Anterior</a></li>
+                                {% endif %}
+                                <li class="page-item active"><span class="page-link">{{ usuarios_pesquisa.number }}</span></li>
+                                {% if usuarios_pesquisa.has_next %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ usuarios_pesquisa.next_page_number }}">Próximo</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% elif request.GET.q %}
+                        <p class="mt-3 text-muted">Nenhum usuário encontrado para a pesquisa.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card de Pesquisa de Protocolos -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Pesquisa de Protocolos</strong>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'protocolos:pesquisa_protocolos' %}">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control" placeholder="Pesquisar protocolos por número ou descrição" aria-label="Pesquisar protocolos">
+                            <button type="submit" class="btn btn-primary">Pesquisar</button>
+                        </div>
+                    </form>
+                    {% if protocolos_pesquisa %}
+                        <table class="table table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Número</th>
+                                    <th>Descrição</th>
+                                    <th>Status</th>
+                                    <th>Data de Criação</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for protocolo in protocolos_pesquisa %}
+                                <tr>
+                                    <td>{{ protocolo.numero }}</td>
+                                    <td>{{ protocolo.descricao }}</td>
+                                    <td>{{ protocolo.status }}</td>
+                                    <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            {% if protocolo.status == 'pendente' %}
+                                                <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Editar</a>
+                                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ protocolo.id }}">
+                                                    Excluir
+                                                </button>
+                                                <!-- Incluindo o modal de confirmação -->
+                                                {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=protocolo.id item_nome=protocolo.numero excluir_url='protocolos:excluir_protocolo' %}
+                                            {% else %}
+                                                <span class="text-muted">Ação não disponível</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <!-- Paginação -->
+                        <nav>
+                            <ul class="pagination">
+                                {% if protocolos_pesquisa.has_previous %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ protocolos_pesquisa.previous_page_number }}">Anterior</a></li>
+                                {% endif %}
+                                <li class="page-item active"><span class="page-link">{{ protocolos_pesquisa.number }}</span></li>
+                                {% if protocolos_pesquisa.has_next %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ protocolos_pesquisa.next_page_number }}">Próximo</a></li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% elif request.GET.q %}
+                        <p class="mt-3 text-muted">Nenhum protocolo encontrado para a pesquisa.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
-    
+
+    <!-- Seção de últimos cadastros -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <strong>Últimos 10 Usuários Cadastrados</strong>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for usuario in ultimos_usuarios %}
+                        <li class="list-group-item">
+                            {{ usuario.nome }} - {{ usuario.username }} - {{ usuario.email }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <strong>Últimos 10 Protocolos Cadastrados</strong>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for protocolo in ultimos_protocolos %}
+                        <li class="list-group-item">
+                            {{ protocolo.numero }} - {{ protocolo.descricao }} - {{ protocolo.data_criacao|date:"d/m/Y H:i" }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db import transaction
+
+from usuarios.models import Usuario
 from .models import Protocolo
 from .forms import ProtocoloForm
 from django.utils import timezone
@@ -58,7 +60,7 @@ def pesquisa_protocolos(request):
     """
     View para pesquisar protocolos com base no número ou descrição.
     """
-    query = request.GET.get('q', '')  # Obtém o termo de pesquisa
+    query = request.GET.get('q')  # Obtém o termo de pesquisa
     page_number = request.GET.get('page')  # Obtém o número da página atual
     itens_por_pagina = 10  # Número de protocolos por página
 
@@ -71,6 +73,7 @@ def pesquisa_protocolos(request):
         # Caso contrário, mostra os últimos protocolos do usuário
         protocolos = Protocolo.objects.filter(usuario=request.user).order_by('-data_criacao')
 
+    '''
     # Paginação para os protocolos (seja pesquisa ou últimos adicionados)
     paginator = Paginator(protocolos, itens_por_pagina)
     protocolos_paginados = paginator.get_page(page_number)
@@ -81,6 +84,20 @@ def pesquisa_protocolos(request):
     }
 
     return render(request, 'protocolos/pesquisa_protocolos.html', context)
+    '''
+    paginator = Paginator(protocolos, 10)  # Mostra 10 protocolos por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Obter os últimos 10 cadastros de usuários e protocolos
+    ultimos_usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')[:10]
+    ultimos_protocolos = Protocolo.objects.all().order_by('-data_criacao')[:10]
+
+    return render(request, 'usuarios/dashboard_master.html', {
+        'protocolos_pesquisa': page_obj,
+        'ultimos_usuarios': ultimos_usuarios,
+        'ultimos_protocolos': ultimos_protocolos,
+    })
 
 @login_required
 def editar_protocolo(request, protocolo_id):

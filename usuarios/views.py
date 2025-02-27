@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.core.paginator import Paginator
+
+from protocolos.models import Protocolo
 from .models import Usuario, Perfil
 from .forms import UsuarioCadastroForm, PerfilPJForm, PerfilPFForm
 from django import forms
@@ -115,7 +117,16 @@ def dashboard_master(request):
     
     if request.user.is_master:
         cadastros_pendentes = Usuario.objects.filter(is_approved=False).count()
-        return render(request, 'usuarios/dashboard_master.html', {'cadastros_pendentes': cadastros_pendentes})
+        
+        # Obter os últimos 10 cadastros de usuários e protocolos
+        ultimos_usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')[:10]
+        ultimos_protocolos = Protocolo.objects.all().order_by('-data_criacao')[:10]
+        
+        return render(request, 'usuarios/dashboard_master.html', {
+            'cadastros_pendentes': cadastros_pendentes,
+            'ultimos_usuarios': ultimos_usuarios,
+            'ultimos_protocolos': ultimos_protocolos,
+        })
     
     return redirect('usuarios:dashboard')
 
@@ -195,20 +206,24 @@ def excluir_usuario(request, user_id):
 # Pesquisa de usuários para o dashboard master
 @login_required
 def pesquisa_usuarios(request):
-    query = request.GET.get('q', '')
-    usuarios_pesquisa = None
+    query = request.GET.get('q')
     if query:
-        usuarios_pesquisa = Usuario.objects.filter(
-            nome__icontains=query
-        ) | Usuario.objects.filter(
-            username__icontains=query
-        ) | Usuario.objects.filter(
-            email__icontains=query
-        )
-    cadastros_pendentes = Usuario.objects.filter(is_approved=False).count()
+        usuarios = Usuario.objects.filter(nome__icontains=query)  # Ajuste o filtro conforme necessário
+    else:
+        usuarios = Usuario.objects.all()
+
+    paginator = Paginator(usuarios, 10)  # Mostra 10 usuários por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Obter os últimos 10 cadastros de usuários e protocolos
+    ultimos_usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')[:10]
+    ultimos_protocolos = Protocolo.objects.all().order_by('-data_criacao')[:10]
+
     return render(request, 'usuarios/dashboard_master.html', {
-        'usuarios_pesquisa': usuarios_pesquisa,
-        'cadastros_pendentes': cadastros_pendentes,
+        'usuarios_pesquisa': page_obj,
+        'ultimos_usuarios': ultimos_usuarios,
+        'ultimos_protocolos': ultimos_protocolos,
     })
 
 # Logout de usuários
