@@ -6,7 +6,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Tem certeza que deseja excluir o item:
+                {% if item_tipo == 'usuario' %}
+                    Tem certeza que deseja excluir o usuário:
+                {% elif item_tipo == 'protocolo' %}
+                    Tem certeza que deseja excluir o protocolo:
+                {% endif %}
                 <br>
                 <a><strong>{{ item_nome }}</strong></a>
                 <p><em>Esta ação não pode ser desfeita.</em></p>

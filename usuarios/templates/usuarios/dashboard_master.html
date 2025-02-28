@@ -60,12 +60,11 @@
                                     <td>{{ usuario.username }}</td>
                                     <td>{{ usuario.email }}</td>
                                     <td>
-                                        <form method="post" action="{% url 'usuarios:excluir_usuario' user_id=usuario.id %}" class="d-inline">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                                        </form>
+                                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ usuario.id }}">
+                                            Excluir
+                                        </button>
                                         <!-- Incluindo o modal de confirmação -->
-                                        {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=usuario.id item_nome=usuario.nome excluir_url='usuarios:excluir_usuario' %}
+                                        {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=usuario.id item_nome=usuario.nome item_tipo='usuario' excluir_url='usuarios:excluir_usuario' %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -129,7 +128,7 @@
                                                     Excluir
                                                 </button>
                                                 <!-- Incluindo o modal de confirmação -->
-                                                {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=protocolo.id item_nome=protocolo.numero excluir_url='protocolos:excluir_protocolo' %}
+                                                {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=protocolo.id item_nome=protocolo.numero item_tipo='protocolo' excluir_url='protocolos:excluir_protocolo' %}
                                             {% else %}
                                                 <span class="text-muted">Ação não disponível</span>
                                             {% endif %}
