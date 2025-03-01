@@ -13,7 +13,7 @@
             <!-- Formulário de Pesquisa -->
             <form method="GET" action="{% url 'protocolos:pesquisa_protocolos' %}" class="mb-4">
                 <div class="input-group">
-                    <input type="text" name="q" class="form-control" placeholder="Digite o número ou descrição..." value="{{ query }}">
+                    <input type="text" name="q" class="form-control" placeholder="Digite o número ou descrição..." value="{{ query|default_if_none:'' }}">
                     <button type="submit" class="btn btn-primary">Pesquisar</button>
                 </div>
             </form>
@@ -55,37 +55,11 @@
                                         <div class="d-flex gap-2">
                                             {% if protocolo.status == 'pendente' %}
                                                 <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Corrigir</a>
-                                                <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}" class="d-inline">
-                                                    {% csrf_token %}
-                                                    <!-- Botão para abrir o modal -->
-                                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ protocolo.id }}">
-                                                        Excluir
-                                                    </button>
-
-                                                    <!-- Modal de Confirmação -->
-                                                    <div class="modal fade" id="confirmarExclusao{{ protocolo.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                        <div class="modal-dialog">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title" id="exampleModalLabel">Confirmar Exclusão</h5>
-                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    Tem certeza que deseja excluir o protocolo <strong>{{ protocolo.numero }}</strong>?  
-                                                                    <p><em>Esta ação não pode ser desfeita.</em></p>
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                                    <form method="post" action="{% url 'protocolos:excluir_protocolo' protocolo.id %}">
-                                                                        {% csrf_token %}
-                                                                        <button type="submit" class="btn btn-danger">Excluir</button>
-                                                                    </form>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                </form>
+                                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ protocolo.id }}">
+                                                    Excluir
+                                                </button>
+                                                <!-- Incluindo o modal de confirmação -->
+                                                {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=protocolo.id item_nome=protocolo.numero item_tipo='protocolo' excluir_url='protocolos:excluir_protocolo' %}
                                             {% else %}
                                                 <span class="text-muted">não permitido...</span>
                                             {% endif %}

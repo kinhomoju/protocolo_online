@@ -57,46 +57,19 @@ def visualizar_protocolo(request, protocolo_id):
 
 @login_required
 def pesquisa_protocolos(request):
-    """
-    View para pesquisar protocolos com base no número ou descrição.
-    """
-    query = request.GET.get('q')  # Obtém o termo de pesquisa
-    page_number = request.GET.get('page')  # Obtém o número da página atual
-    itens_por_pagina = 10  # Número de protocolos por página
-
+    query = request.GET.get('q', '')  # Define um valor padrão vazio para query
     if query:
-        # Se houver pesquisa, filtra os protocolos pelo número ou descrição
-        protocolos = Protocolo.objects.filter(
-            Q(numero__icontains=query) | Q(descricao__icontains=query)
-        ).order_by('-data_criacao')
+        protocolos = Protocolo.objects.filter(numero__icontains=query)  # Ajuste o filtro conforme necessário
     else:
-        # Caso contrário, mostra os últimos protocolos do usuário
-        protocolos = Protocolo.objects.filter(usuario=request.user).order_by('-data_criacao')
+        protocolos = Protocolo.objects.all()
 
-    '''
-    # Paginação para os protocolos (seja pesquisa ou últimos adicionados)
-    paginator = Paginator(protocolos, itens_por_pagina)
-    protocolos_paginados = paginator.get_page(page_number)
-
-    context = {
-        'protocolos_paginados': protocolos_paginados,  # Mantemos a mesma variável no template
-        'query': query,  # Para manter a pesquisa preenchida no campo do formulário
-    }
-
-    return render(request, 'protocolos/pesquisa_protocolos.html', context)
-    '''
     paginator = Paginator(protocolos, 10)  # Mostra 10 protocolos por página
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Obter os últimos 10 cadastros de usuários e protocolos
-    ultimos_usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')[:10]
-    ultimos_protocolos = Protocolo.objects.all().order_by('-data_criacao')[:10]
-
-    return render(request, 'usuarios/dashboard_master.html', {
-        'protocolos_pesquisa': page_obj,
-        'ultimos_usuarios': ultimos_usuarios,
-        'ultimos_protocolos': ultimos_protocolos,
+    return render(request, 'protocolos/pesquisa_protocolos.html', {
+        'protocolos_paginados': page_obj,
+        'query': query,
     })
 
 @login_required
