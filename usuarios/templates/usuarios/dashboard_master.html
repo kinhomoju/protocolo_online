@@ -64,7 +64,7 @@
                                             Excluir
                                         </button>
                                         <!-- Incluindo o modal de confirmação -->
-                                        {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=usuario.id item_nome=usuario.nome item_tipo='usuario' excluir_url='usuarios:excluir_usuario' %}
+                                        {% include 'includes/_modal_confirmacao_exclusao.html' with item_id=usuario.id item_nome=usuario.nome item_tipo='usuario' excluir_url='usuarios:excluir_usuario' %}
                                     </td>
                                 </tr>
                                 {% endfor %}

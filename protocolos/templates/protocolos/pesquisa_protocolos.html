@@ -59,7 +59,7 @@
                                                     Excluir
                                                 </button>
                                                 <!-- Incluindo o modal de confirmação -->
-                                                {% include 'usuarios/_modal_confirmacao_exclusao.html' with item_id=protocolo.id item_nome=protocolo.numero item_tipo='protocolo' excluir_url='protocolos:excluir_protocolo' %}
+                                                {% include 'includes/_modal_confirmacao_exclusao.html' with item_id=protocolo.id item_nome=protocolo.numero item_tipo='protocolo' excluir_url='protocolos:excluir_protocolo' %}
                                             {% else %}
                                                 <span class="text-muted">não permitido...</span>
                                             {% endif %}

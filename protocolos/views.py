@@ -59,7 +59,9 @@ def visualizar_protocolo(request, protocolo_id):
 def pesquisa_protocolos(request):
     query = request.GET.get('q', '')  # Define um valor padrão vazio para query
     if query:
-        protocolos = Protocolo.objects.filter(numero__icontains=query)  # Ajuste o filtro conforme necessário
+        protocolos = Protocolo.objects.filter(
+            Q(numero__icontains=query) | Q(descricao__icontains=query)
+        )  # Ajuste o filtro conforme necessário
     else:
         protocolos = Protocolo.objects.all()
 
