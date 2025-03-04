@@ -1,0 +1,12 @@
+<!-- filepath: /workspaces/protocolo_online/protocolos/templates/protocolos/lancar_protocolo_pf.html -->
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Lançar Protocolo PF</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="numero_protocolo" value="{{ protocolo_numero }}">
+    <button type="submit" class="btn btn-primary">Salvar</button>
+  </form>
+{% endblock %}

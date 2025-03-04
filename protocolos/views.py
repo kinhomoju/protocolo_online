@@ -7,7 +7,7 @@ from django.db import transaction
 
 from usuarios.models import Usuario
 from .models import Protocolo
-from .forms import ProtocoloForm
+from .forms import ProtocoloForm, ProtocoloPFForm, ProtocoloPJForm
 from django.utils import timezone
 
 def gerar_numero_protocolo():
@@ -15,26 +15,20 @@ def gerar_numero_protocolo():
     date_prefix = now.strftime('%d%m%Y')
     time_part = now.strftime('%H%M%S')
     # Conta os protocolos criados hoje
-    count = Protocolo.objects.filter(numero__startswith=date_prefix).count() + 1
+    count = Protocolo.objects.filter(numero__startswith(date_prefix)).count() + 1
     sequence = str(count).zfill(4)
     return date_prefix + time_part + sequence
 
 @login_required
 def lancar_protocolo(request):
-    """
-    Cria um novo protocolo automaticamente e redireciona para a tela de visualização,
-    onde o protocolo recém-criado (com número gerado automaticamente) é exibido.
-    """
     provisional_number = gerar_numero_protocolo()
     
     if request.method == 'POST':
         form = ProtocoloForm(request.POST)
         if form.is_valid():
             protocolo = form.save(commit=False)
-            # Use o número passado no campo oculto ou re-gere se necessário
-            protocolo.numero = request.POST.get('numero_protocolo', provisional_number)
+            protocolo.numero = provisional_number
             protocolo.usuario = request.user
-            # Salva o protocolo com a transação para garantir a unicidade
             protocolo.save()
             messages.success(request, f"Protocolo {protocolo.numero} salvo com sucesso.")
             return redirect('protocolos:comprovante', protocolo_id=protocolo.id)
@@ -47,25 +41,60 @@ def lancar_protocolo(request):
     })
 
 @login_required
+def lancar_protocolo_pf(request):
+    provisional_number = gerar_numero_protocolo()
+    
+    if request.method == 'POST':
+        form = ProtocoloPFForm(request.POST)
+        if form.is_valid():
+            protocolo = form.save(commit=False)
+            protocolo.numero = provisional_number
+            protocolo.usuario = request.user
+            protocolo.save()
+            messages.success(request, f"Protocolo {protocolo.numero} salvo com sucesso.")
+            return redirect('protocolos:comprovante', protocolo_id=protocolo.id)
+    else:
+        form = ProtocoloPFForm()
+    
+    return render(request, 'protocolos/lancar_protocolo_pf.html', {
+        'form': form,
+        'protocolo_numero': provisional_number,
+    })
+
+@login_required
+def lancar_protocolo_pj(request):
+    if request.method == 'POST':
+        form = ProtocoloPJForm(request.POST)
+        if form.is_valid():
+            protocolo = form.save(commit=False)
+            protocolo.numero_nota_fiscal = form.cleaned_data['numero_nota_fiscal']
+            protocolo.usuario = request.user
+            protocolo.save()
+            messages.success(request, f"Protocolo {protocolo.numero_nota_fiscal} salvo com sucesso.")
+            return redirect('protocolos:comprovante', protocolo_id=protocolo.id)
+    else:
+        form = ProtocoloPJForm()
+    
+    return render(request, 'protocolos/lancar_protocolo_pj.html', {
+        'form': form,
+    })
+
+@login_required
 def visualizar_protocolo(request, protocolo_id):
-    """
-    Exibe uma página com os detalhes do protocolo recém-criado.
-    O número do protocolo é exibido e não pode ser editado.
-    """
     protocolo = get_object_or_404(Protocolo, id=protocolo_id)
     return render(request, 'protocolos/visualizar_protocolo.html', {'protocolo': protocolo})
 
 @login_required
 def pesquisa_protocolos(request):
-    query = request.GET.get('q', '')  # Define um valor padrão vazio para query
+    query = request.GET.get('q', '')
     if query:
         protocolos = Protocolo.objects.filter(
             Q(numero__icontains=query) | Q(descricao__icontains=query)
-        )  # Ajuste o filtro conforme necessário
+        )
     else:
         protocolos = Protocolo.objects.all()
 
-    paginator = Paginator(protocolos, 10)  # Mostra 10 protocolos por página
+    paginator = Paginator(protocolos, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -76,11 +105,7 @@ def pesquisa_protocolos(request):
 
 @login_required
 def editar_protocolo(request, protocolo_id):
-    """
-    View para editar (corrigir) um protocolo, se o status permitir.
-    """
     protocolo = get_object_or_404(Protocolo, id=protocolo_id)
-    # Se o protocolo já estiver em status final, pode impedir a edição (opcional)
     if request.method == 'POST':
         form = ProtocoloForm(request.POST, instance=protocolo)
         if form.is_valid():
@@ -93,11 +118,7 @@ def editar_protocolo(request, protocolo_id):
 
 @login_required
 def excluir_protocolo(request, protocolo_id):
-    """
-    View para excluir um protocolo se o status permitir.
-    """
     protocolo = get_object_or_404(Protocolo, id=protocolo_id)
-    # Verifique se o protocolo pode ser excluído (opcional, por status)
     if protocolo.status in ['pago', 'rejeitado', 'devolvido']:
         messages.error(request, "Este protocolo não pode ser excluído.")
         return redirect('protocolos:pesquisa_protocolos')
