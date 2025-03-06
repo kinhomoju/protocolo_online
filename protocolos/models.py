@@ -1,6 +1,7 @@
 from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
+import uuid
 
 class Protocolo(models.Model):
     TIPO_PF_CHOICES = [
@@ -15,8 +16,9 @@ class Protocolo(models.Model):
         ('pendente', 'Pendente'),
     ]
 
+    numero = models.CharField(max_length=20, unique=True, editable=False)  # Descomente este campo
     tipo_pf = models.CharField(max_length=20, choices=TIPO_PF_CHOICES, null=True, blank=True)
-    numero = models.CharField(max_length=20, unique=True, editable=False)
+    numero_recibo = models.CharField(max_length=20, unique=True, editable=False, default=uuid.uuid4().hex)
     numero_nota_fiscal = models.CharField(max_length=20, null=True, blank=True)
     cpf = models.CharField(max_length=14, null=True, blank=True)
     nome = models.CharField(max_length=255, default='Nome padrão')

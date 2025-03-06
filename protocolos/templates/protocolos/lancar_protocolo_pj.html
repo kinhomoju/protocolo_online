@@ -1,12 +1,121 @@
 <!-- filepath: /workspaces/protocolo_online/protocolos/templates/protocolos/lancar_protocolo_pj.html -->
 {% extends "base_generic.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Lançamento de Protocolo{% endblock %}
 
 {% block content %}
-  <h1>Lançar Protocolo PJ</h1>
-  <form method="post">
+<div class="container mt-4">
+  <h1 class="mb-4 text-center">.::: Lançamento de Protocolo :::.</h1>
+  <form method="post" class="needs-validation" novalidate>
     {% csrf_token %}
-    {{ form.as_p }}
-    <input type="hidden" name="numero_protocolo" value="{{ protocolo_numero }}">
-    <button type="submit" class="btn btn-primary">Salvar</button>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="numero_protocolo" class="form-label" style="font-weight: bold;">nº do Protocolo</label>
+        <input type="text" id="numero_protocolo" class="form-control" value="{{ protocolo_numero }}" readonly>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="{{ form.cnpj.id_for_label }}" class="form-label" style="font-weight: bold;">CNPJ</label>
+        {{ form.cnpj|add_class:"form-control"|add_placeholder:"Digite o CNPJ..." }}
+        <div class="invalid-feedback">
+          O CNPJ inserido não é válido. Por favor, verifique e tente novamente.
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="{{ form.nome_empresa.id_for_label }}" class="form-label" style="font-weight: bold;">Nome da Empresa</label>
+        {{ form.nome_empresa|add_class:"form-control"|add_placeholder:"Digite o nome da empresa..." }}
+        <div class="invalid-feedback">
+          Por favor, insira o nome da empresa.
+        </div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="{{ form.endereco.id_for_label }}" class="form-label" style="font-weight: bold;">Endereço</label>
+        {{ form.endereco|add_class:"form-control"|add_placeholder:"Digite o endereço..." }}
+        <div class="invalid-feedback">
+          Por favor, insira o endereço.
+        </div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.descricao_servicos.id_for_label }}" class="form-label" style="font-weight: bold;">Descrição dos Serviços</label>
+      {{ form.descricao_servicos|add_class:"form-control"|add_placeholder:"Descreva os serviços prestados..." }}
+      <div class="invalid-feedback">
+        Por favor, insira a descrição dos serviços.
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label for="{{ form.valor_bruto.id_for_label }}" class="form-label" style="font-weight: bold;">Valor Bruto</label>
+        {{ form.valor_bruto|add_class:"form-control"|add_placeholder:"Digite o valor bruto..." }}
+        <div class="invalid-feedback">
+          Por favor, insira o valor bruto.
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label for="{{ form.descontos_iss.id_for_label }}" class="form-label" style="font-weight: bold;">ISS</label>
+        {{ form.descontos_iss|add_class:"form-control"|add_placeholder:"Digite os descontos do ISS..." }}
+        <div class="invalid-feedback">
+          Por favor, insira os descontos do ISS.
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label for="{{ form.descontos_irrf.id_for_label }}" class="form-label" style="font-weight: bold;">IRRF</label>
+        {{ form.descontos_irrf|add_class:"form-control"|add_placeholder:"Digite os descontos do IRRF..." }}
+        <div class="invalid-feedback">
+          Por favor, insira os descontos do IRRF.
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="{{ form.valor_liquido.id_for_label }}" class="form-label" style="font-weight: bold;">Valor Líquido</label>
+        {{ form.valor_liquido|add_class:"form-control"|add_placeholder:"Digite o valor líquido..." }}
+        <div class="invalid-feedback">
+          Por favor, insira o valor líquido.
+        </div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="{{ form.data_nota_fiscal.id_for_label }}" class="form-label" style="font-weight: bold;">Data da Nota Fiscal</label>
+        {{ form.data_nota_fiscal|add_class:"form-control"|add_placeholder:"Selecione a data da nota fiscal..." }}
+        <div class="invalid-feedback">
+          Por favor, insira a data da nota fiscal.
+        </div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.numero_nota_fiscal.id_for_label }}" class="form-label" style="font-weight: bold;">Número da Nota Fiscal</label>
+      {{ form.numero_nota_fiscal|add_class:"form-control"|add_placeholder:"Digite o número da nota fiscal..." }}
+      <div class="invalid-feedback">
+        Por favor, insira o número da nota fiscal.
+      </div>
+    </div>
+    <div class="text-center">
+      <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Voltar</a>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </div>
   </form>
+</div>
+<script>
+  // Exemplo de JavaScript para desativar o envio do formulário, se houver campos inválidos.
+  (function() {
+    'use strict';
+    window.addEventListener('load', function() {
+      // Pega todos os formulários que nós queremos aplicar estilos de validação Bootstrap personalizados.
+      var forms = document.getElementsByClassName('needs-validation');
+      // Faz um loop neles e evita o envio.
+      var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }, false);
+      });
+    }, false);
+  })();
+</script>
 {% endblock %}

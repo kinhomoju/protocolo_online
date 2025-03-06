@@ -10,6 +10,7 @@ from .models import Protocolo
 from .forms import ProtocoloForm, ProtocoloPFForm, ProtocoloPJForm
 from django.utils import timezone
 
+
 def gerar_numero_protocolo():
     now = timezone.localtime(timezone.now())
     date_prefix = now.strftime('%d%m%Y')
@@ -63,20 +64,23 @@ def lancar_protocolo_pf(request):
 
 @login_required
 def lancar_protocolo_pj(request):
+    provisional_number = gerar_numero_protocolo()
+    
     if request.method == 'POST':
         form = ProtocoloPJForm(request.POST)
         if form.is_valid():
             protocolo = form.save(commit=False)
-            protocolo.numero_nota_fiscal = form.cleaned_data['numero_nota_fiscal']
+            protocolo.numero = provisional_number
             protocolo.usuario = request.user
             protocolo.save()
-            messages.success(request, f"Protocolo {protocolo.numero_nota_fiscal} salvo com sucesso.")
+            messages.success(request, f"Protocolo {protocolo.numero} salvo com sucesso.")
             return redirect('protocolos:comprovante', protocolo_id=protocolo.id)
     else:
         form = ProtocoloPJForm()
     
     return render(request, 'protocolos/lancar_protocolo_pj.html', {
         'form': form,
+        'protocolo_numero': provisional_number,
     })
 
 @login_required
