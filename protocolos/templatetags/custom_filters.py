@@ -3,14 +3,14 @@ from django.forms import BoundField
 
 register = template.Library()
 
-@register.filter(name='add_class')
-def add_class(field, css_class):
+@register.filter(name='add_attr')
+def add_attr(field, attrs):
     if isinstance(field, BoundField):
-        return field.as_widget(attrs={"class": css_class})
-    return field
-
-@register.filter(name='add_placeholder')
-def add_placeholder(field, placeholder):
-    if isinstance(field, BoundField):
-        return field.as_widget(attrs={"placeholder": placeholder})
+        attrs_dict = {}
+        for attr in attrs.split(","):
+            parts = attr.split(":", 1)  # Garante apenas uma divisão no primeiro ':'
+            if len(parts) == 2:
+                key, value = parts
+                attrs_dict[key.strip()] = value.strip()
+        return field.as_widget(attrs=attrs_dict)
     return field
