@@ -11,11 +11,11 @@
   <form method="post" class="needs-validation" novalidate>
     {% csrf_token %}
     <div class="row">
-      <div class="col-md-6 mb-3">
+      <div class="col-md-2 mb-3">
         <label for="numero_protocolo" class="form-label" style="font-weight: bold;">nº do Protocolo</label>
         <input type="text" id="numero_protocolo" class="form-control" value="{{ protocolo_numero }}" readonly>
       </div>
-      <div class="col-md-6 mb-3">
+      <div class="col-md-5 mb-3">
         <label for="{{ form.cnpj.id_for_label }}" class="form-label" style="font-weight: bold;">CNPJ</label>
         {{ form.cnpj|add_class:"form-control"|add_placeholder:"Digite o CNPJ..." }}
         <div class="invalid-feedback">
@@ -24,7 +24,7 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-md-6 mb-3">
+      <div class="col-md-5 mb-3">
         <label for="{{ form.nome_empresa.id_for_label }}" class="form-label" style="font-weight: bold;">Nome da Empresa</label>
         {{ form.nome_empresa|add_class:"form-control"|add_placeholder:"Digite o nome da empresa..." }}
         <div class="invalid-feedback">

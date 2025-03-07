@@ -44,7 +44,7 @@ class Protocolo(models.Model):
             date_prefix = now.strftime('%d%m%Y')
             time_part = now.strftime('%H%M%S')
             with transaction.atomic():
-                count = Protocolo.objects.filter(numero__startswith(date_prefix)).count() + 1
+                count = Protocolo.objects.filter(numero__startswith=date_prefix).count() + 1
                 sequence = str(count).zfill(4)
                 self.numero = date_prefix + time_part + sequence
         super().save(*args, **kwargs)

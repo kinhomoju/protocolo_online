@@ -16,7 +16,7 @@ def gerar_numero_protocolo():
     date_prefix = now.strftime('%d%m%Y')
     time_part = now.strftime('%H%M%S')
     # Conta os protocolos criados hoje
-    count = Protocolo.objects.filter(numero__startswith(date_prefix)).count() + 1
+    count = Protocolo.objects.filter(numero__startswith=date_prefix).count() + 1
     sequence = str(count).zfill(4)
     return date_prefix + time_part + sequence
 
