@@ -16,8 +16,16 @@ class Protocolo(models.Model):
         ('pendente', 'Pendente'),
     ]
 
-    numero = models.CharField(max_length=20, unique=True, editable=False)  # Descomente este campo
+    TIPO_NF_CHOICES = [
+        ('NFe', 'Nota Fiscal Eletrônica (NFe)'),
+        ('NFSe', 'Nota Fiscal de Serviços Eletrônica (NFSe)'),
+    ]
+
+    numero = models.CharField(max_length=20, unique=True, editable=False)
     tipo_pf = models.CharField(max_length=20, choices=TIPO_PF_CHOICES, null=True, blank=True)
+    tipo_nf = models.CharField(max_length=20, choices=TIPO_NF_CHOICES, null=True, blank=True)
+    descontar_iss = models.BooleanField(default=False)
+    simples_nacional = models.BooleanField(default=False)  # Novo campo
     numero_recibo = models.CharField(max_length=20, unique=True, editable=False, default=uuid.uuid4().hex)
     numero_nota_fiscal = models.CharField(max_length=20, null=True, blank=True)
     cpf = models.CharField(max_length=14, null=True, blank=True)

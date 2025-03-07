@@ -4,11 +4,11 @@ from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.utils import timezone
 
 from usuarios.models import Usuario
 from .models import Protocolo
 from .forms import ProtocoloForm, ProtocoloPFForm, ProtocoloPJForm
-from django.utils import timezone
 
 
 def gerar_numero_protocolo():
@@ -65,12 +65,15 @@ def lancar_protocolo_pf(request):
 @login_required
 def lancar_protocolo_pj(request):
     provisional_number = gerar_numero_protocolo()
+    data_hora = timezone.localtime(timezone.now()).strftime('%d/%m/%Y %H:%M:%S')
     
     if request.method == 'POST':
         form = ProtocoloPJForm(request.POST)
         if form.is_valid():
             protocolo = form.save(commit=False)
             protocolo.numero = provisional_number
+            protocolo.data_hora_lancamento = timezone.now()
+            protocolo.status = 'pendente'
             protocolo.usuario = request.user
             protocolo.save()
             messages.success(request, f"Protocolo {protocolo.numero} salvo com sucesso.")
@@ -81,6 +84,7 @@ def lancar_protocolo_pj(request):
     return render(request, 'protocolos/lancar_protocolo_pj.html', {
         'form': form,
         'protocolo_numero': provisional_number,
+        'data_hora': data_hora,
     })
 
 @login_required
