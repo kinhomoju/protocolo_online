@@ -79,7 +79,7 @@
             </div>
             <div class="mb-3 row justify-content-end">
               <label for="{{ form.valor_bruto.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Bruto</label>
-              <div class="col-sm-4 col-md-4">
+              <div class="col-sm-8 col-md-6">
                 {{ form.valor_bruto|add_attr:"class:form-control,placeholder:Digite o valor bruto...,style:color:blue;" }}
                 <div class="invalid-feedback">
                   Por favor, insira o valor bruto.
@@ -88,7 +88,7 @@
             </div>
             <div class="mb-3 row justify-content-end" id="descontos_iss_row" style="display: none;">
               <label for="{{ form.descontos_iss.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (ISS)</label>
-              <div class="col-sm-4 col-md-4">
+              <div class="col-sm-8 col-md-6">
                 {{ form.descontos_iss|add_attr:"class:form-control,placeholder:Digite os descontos do ISS...,style:color:red" }}
                 <div class="invalid-feedback">
                   Por favor, insira os descontos do ISS.
@@ -97,7 +97,7 @@
             </div>
             <div class="mb-3 row justify-content-end" id="descontos_irrf_row" style="display: none;">
               <label for="{{ form.descontos_irrf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (IRRF)</label>
-              <div class="col-sm-4 col-md-4">
+              <div class="col-sm-8 col-md-6">
                 {{ form.descontos_irrf|add_attr:"class:form-control,placeholder:Digite os descontos do IRRF...,style:color:red" }}
                 <div class="invalid-feedback">
                   Por favor, insira os descontos do IRRF.
@@ -106,7 +106,7 @@
             </div>
             <div class="mb-3 row justify-content-end">
               <label for="{{ form.valor_liquido.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Líquido</label>
-              <div class="col-sm-4 col-md-4">
+              <div class="col-sm-8 col-md-6">
                 {{ form.valor_liquido|add_attr:"readonly:true,style:color:green; font-weight:bold;" }}
                 <div class="invalid-feedback">
                   Por favor, insira o valor líquido.
