@@ -1,5 +1,6 @@
 <!-- filepath: /workspaces/protocolo_online/protocolos/templates/protocolos/lancar_protocolo_pj.html -->
 {% extends "base_generic.html" %}
+{% load l10n %}
 {% load static %}
 {% load custom_filters %}
 
@@ -7,195 +8,229 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h1 class="mb-4 text-center">.::: Lançamento de Protocolo :::.</h1>
-  <form method="post" class="needs-validation" novalidate>
-    {% csrf_token %}
-    <div class="row">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header" style="font-weight: bold;">
-            HISTÓRICO DO BENEFICIÁRIO
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="numero_protocolo" class="form-label" style="font-weight: bold;">nº do Protocolo</label>
-                <input type="text" id="numero_protocolo" class="form-control" value="{{ protocolo_numero }}" readonly>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="data_hora" class="form-label" style="font-weight: bold;">Data/Hora</label>
-                <input type="text" id="data_hora" class="form-control" value="{{ data_hora }}" readonly>
-              </div>
+    <h1 class="mb-4 text-center">.::: Lançamento de Protocolo :::.</h1>
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" style="font-weight: bold;">
+                        HISTÓRICO DO BENEFICIÁRIO
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="numero_protocolo" class="form-label" style="font-weight: bold;">nº do Protocolo</label>
+                                <input type="text" id="numero_protocolo" class="form-control" value="{{ protocolo_numero }}" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="data_hora" class="form-label" style="font-weight: bold;">Data/Hora</label>
+                                <input type="text" id="data_hora" class="form-control" value="{{ data_hora }}" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.descricao_servicos.id_for_label }}" class="form-label" style="font-weight: bold;">Descrição dos Serviços</label>
+                            {{ form.descricao_servicos|add_attr:"class:form-control,placeholder:Descreva os serviços prestados..." }}
+                            <div class="invalid-feedback">
+                                Por favor, insira a descrição dos serviços.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-              <label for="{{ form.descricao_servicos.id_for_label }}" class="form-label" style="font-weight: bold;">Descrição dos Serviços</label>
-              {{ form.descricao_servicos|add_attr:"class:form-control,placeholder:Descreva os serviços prestados..." }}
-              <div class="invalid-feedback">
-                Por favor, insira a descrição dos serviços.
-              </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header" style="font-weight: bold;">
+                        ENCARGOS DO BENEFICIÁRIO
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3 row">
+                            <label for="{{ form.tipo_nf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Tipo de NF</label>
+                            <div class="col-sm-8">
+                                {{ form.tipo_nf|add_attr:"class:form-control" }}
+                                <div class="invalid-feedback">
+                                    Por favor, selecione o tipo de nota fiscal.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-center">
+                            <div class="col-sm-6 mb-3 text-center">
+                                <label for="{{ form.simples_nacional.id_for_label }}" class="form-label" style="font-weight: bold;">Simples Nacional</label>
+                                {{ form.simples_nacional|add_attr:"class:form-check-input" }}
+                                <div class="invalid-feedback">
+                                    Por favor, indique se a empresa é do Simples Nacional.
+                                </div>
+                            </div>
+                            <div class="col-sm-6 mb-3 text-center">
+                                <label for="{{ form.descontar_iss.id_for_label }}" class="form-label" style="font-weight: bold;">Descontar ISS</label>
+                                {{ form.descontar_iss|add_attr:"class:form-check-input" }}
+                                <div class="invalid-feedback">
+                                    Por favor, indique se o ISS será descontado.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 row justify-content-start">
+                            <label for="{{ form.numero_nota_fiscal.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">nº da NF/NFSe</label>
+                            <div class="col-sm-8 col-md-6">
+                                {{ form.numero_nota_fiscal|add_attr:"class:form-control,placeholder:Digite o nº da NF..." }}
+                                <div class="invalid-feedback">
+                                    Por favor, insira o número da nota fiscal.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 row justify-content-end">
+                            <label for="{{ form.valor_bruto.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Bruto</label>
+                            <div class="col-sm-8 col-md-6">
+                                <input type="text" 
+                                    id="valor_bruto"
+                                    name="{{ form.valor_bruto.html_name }}"
+                                    class="form-control"
+                                    placeholder="Digite o valor bruto..."
+                                    style="color:blue;"
+                                    value="{{ form.valor_bruto.value|default:'' }}"
+                                    oninput="formatCurrency(this)">
+                            </div>
+                        </div>
+                        <div class="mb-3 row justify-content-end" id="descontos_iss_row" style="display: none;">
+                            <label for="{{ form.descontos_iss.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (ISS)</label>
+                            <div class="col-sm-8 col-md-6">
+                                <input type="text" 
+                                    id="descontos_iss"
+                                    name="{{ form.descontos_iss.html_name }}"
+                                    class="form-control"
+                                    placeholder="Digite os descontos do ISS..."
+                                    style="color:red;"
+                                    value="{{ form.descontos_iss.value|default:'' }}"
+                                    oninput="formatCurrency(this)">
+                                <div class="invalid-feedback">
+                                    Por favor, insira os descontos do ISS.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 row justify-content-end" id="descontos_irrf_row" style="display: none;">
+                            <label for="{{ form.descontos_irrf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (IRRF)</label>
+                            <div class="col-sm-8 col-md-6">
+                                <input type="text" 
+                                    id="descontos_irrf"
+                                    name="{{ form.descontos_irrf.html_name }}"
+                                    class="form-control"
+                                    placeholder="Digite os descontos do IRRF..."
+                                    style="color:red;"
+                                    value="{{ form.descontos_irrf.value|default:'' }}"
+                                    oninput="formatCurrency(this)">
+                                <div class="invalid-feedback">
+                                    Por favor, insira os descontos do IRRF.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 row justify-content-end">
+                            <label for="{{ form.valor_liquido.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Líquido</label>
+                            <div class="col-sm-8 col-md-6">
+                                <input type="text" 
+                                    id="valor_liquido"
+                                    name="{{ form.valor_liquido.html_name }}"
+                                    class="form-control"
+                                    readonly
+                                    style="color:green; font-weight:bold;"
+                                    value="{{ form.valor_liquido.value|default:'' }}">
+                                <div class="invalid-feedback">
+                                    Por favor, insira o valor líquido.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-header" style="font-weight: bold;">
-            ENCARGOS DO BENEFICIÁRIO
-          </div>
-          <div class="card-body">
-            <div class="mb-3 row">
-              <label for="{{ form.tipo_nf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Tipo de NF</label>
-              <div class="col-sm-8">
-                {{ form.tipo_nf|add_attr:"class:form-control" }}
-                <div class="invalid-feedback">
-                  Por favor, selecione o tipo de nota fiscal.
-                </div>
-              </div>
-            </div>
-            <div class="row justify-content-center">
-              <div class="col-sm-6 mb-3 text-center">
-                <label for="{{ form.simples_nacional.id_for_label }}" class="form-label" style="font-weight: bold;">Simples Nacional</label>
-                {{ form.simples_nacional|add_attr:"class:form-check-input" }}
-                <div class="invalid-feedback">
-                  Por favor, indique se a empresa é do Simples Nacional.
-                </div>
-              </div>
-              <div class="col-sm-6 mb-3 text-center">
-                <label for="{{ form.descontar_iss.id_for_label }}" class="form-label" style="font-weight: bold;">Descontar ISS</label>
-                {{ form.descontar_iss|add_attr:"class:form-check-input" }}
-                <div class="invalid-feedback">
-                  Por favor, indique se o ISS será descontado.
-                </div>
-              </div>
-            </div>
-            <div class="mb-3 row justify-content-start">
-              <label for="{{ form.numero_nota_fiscal.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">nº da NF/NFSe</label>
-              <div class="col-sm-8 col-md-6">
-                {{ form.numero_nota_fiscal|add_attr:"class:form-control,placeholder:Digite o nº da NF..." }}
-                <div class="invalid-feedback">
-                  Por favor, insira o número da nota fiscal.
-                </div>
-              </div>
-            </div>
-            <div class="mb-3 row justify-content-end">
-              <label for="{{ form.valor_bruto.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Bruto</label>
-              <div class="col-sm-8 col-md-6">
-                {{ form.valor_bruto|add_attr:"class:form-control,placeholder:Digite o valor bruto...,style:color:blue;" }}
-                <div class="invalid-feedback">
-                  Por favor, insira o valor bruto.
-                </div>
-              </div>
-            </div>
-            <div class="mb-3 row justify-content-end" id="descontos_iss_row" style="display: none;">
-              <label for="{{ form.descontos_iss.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (ISS)</label>
-              <div class="col-sm-8 col-md-6">
-                {{ form.descontos_iss|add_attr:"class:form-control,placeholder:Digite os descontos do ISS...,style:color:red" }}
-                <div class="invalid-feedback">
-                  Por favor, insira os descontos do ISS.
-                </div>
-              </div>
-            </div>
-            <div class="mb-3 row justify-content-end" id="descontos_irrf_row" style="display: none;">
-              <label for="{{ form.descontos_irrf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (IRRF)</label>
-              <div class="col-sm-8 col-md-6">
-                {{ form.descontos_irrf|add_attr:"class:form-control,placeholder:Digite os descontos do IRRF...,style:color:red" }}
-                <div class="invalid-feedback">
-                  Por favor, insira os descontos do IRRF.
-                </div>
-              </div>
-            </div>
-            <div class="mb-3 row justify-content-end">
-              <label for="{{ form.valor_liquido.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Líquido</label>
-              <div class="col-sm-8 col-md-6">
-                {{ form.valor_liquido|add_attr:"readonly:true,style:color:green; font-weight:bold;" }}
-                <div class="invalid-feedback">
-                  Por favor, insira o valor líquido.
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Voltar</a>
+            <button type="submit" class="btn btn-primary">Salvar</button>
         </div>
-      </div>
-    </div>
-    <div class="text-center mt-4">
-      <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Voltar</a>
-      <button type="submit" class="btn btn-primary">Salvar</button>
-    </div>
-  </form>
+    </form>
 </div>
 
 <script>
-  // Exemplo de JavaScript para desativar o envio do formulário, se houver campos inválidos.
-  (function() {
-    'use strict';
-    window.addEventListener('load', function() {
-      // Pega todos os formulários que nós queremos aplicar estilos de validação Bootstrap personalizados.
-      var forms = document.getElementsByClassName('needs-validation');
-      // Faz um loop neles e evita o envio.
-      var validation = Array.prototype.filter.call(forms, function(form) {
-        form.addEventListener('submit', function(event) {
-          if (form.checkValidity() === false) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          form.classList.add('was-validated');
+    // Exemplo de JavaScript para desativar o envio do formulário, se houver campos inválidos.
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            // Pega todos os formulários que nós queremos aplicar estilos de validação Bootstrap personalizados.
+            var forms = document.getElementsByClassName('needs-validation');
+            // Faz um loop neles e evita o envio.
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
         }, false);
-      });
-    }, false);
-  })();
+    })();
 
-  // JavaScript para exibir ou ocultar os campos de desconto com base nas seleções feitas pelo usuário.
-  document.addEventListener('DOMContentLoaded', function() {
-    const tipoNfField = document.getElementById('{{ form.tipo_nf.id_for_label }}');
-    const simplesNacionalField = document.getElementById('{{ form.simples_nacional.id_for_label }}');
-    const descontarIssField = document.getElementById('{{ form.descontar_iss.id_for_label }}');
-    const descontosIssField = document.getElementById('descontos_iss_row');
-    const descontosIrrfField = document.getElementById('descontos_irrf_row');
-    const valorBrutoField = document.getElementById('{{ form.valor_bruto.id_for_label }}');
-    const descontosIssInput = document.getElementById('{{ form.descontos_iss.id_for_label }}');
-    const descontosIrrfInput = document.getElementById('{{ form.descontos_irrf.id_for_label }}');
-    const valorLiquidoField = document.getElementById('{{ form.valor_liquido.id_for_label }}');
+    // JavaScript para exibir ou ocultar os campos de desconto com base nas seleções feitas pelo usuário.
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoNfField = document.getElementById('{{ form.tipo_nf.id_for_label }}');
+        const simplesNacionalField = document.getElementById('{{ form.simples_nacional.id_for_label }}');
+        const descontarIssField = document.getElementById('{{ form.descontar_iss.id_for_label }}');
+        const descontosIssField = document.getElementById('descontos_iss_row');
+        const descontosIrrfField = document.getElementById('descontos_irrf_row');
+        const valorBrutoField = document.getElementById('valor_bruto');
+        const descontosIssInput = document.getElementById('descontos_iss');
+        const descontosIrrfInput = document.getElementById('descontos_irrf');
+        const valorLiquidoField = document.getElementById('valor_liquido');
 
-    function toggleDescontoFields() {
-      const tipoNfValue = tipoNfField.value;
-      const simplesNacionalChecked = simplesNacionalField.checked;
-      const descontarIssChecked = descontarIssField.checked;
+        function toggleDescontoFields() {
+            const tipoNfValue = tipoNfField.value;
+            const simplesNacionalChecked = simplesNacionalField.checked;
+            const descontarIssChecked = descontarIssField.checked;
 
-      if (tipoNfValue === 'NFe') {
-        descontosIssField.style.display = 'none';
-        descontosIrrfField.style.display = 'none';
-      } else if (tipoNfValue === 'NFSe') {
-        if (simplesNacionalChecked) {
-          descontosIrrfField.style.display = 'none';
-          if (descontarIssChecked) {
-            descontosIssField.style.display = 'flex';
-          } else {
-            descontosIssField.style.display = 'none';
-          }
-        } else {
-          descontosIrrfField.style.display = 'flex';
-          descontosIssField.style.display = 'flex';
+            if (tipoNfValue === 'NFe') {
+                descontosIssField.style.display = 'none';
+                descontosIrrfField.style.display = 'none';
+            } else if (tipoNfValue === 'NFSe') {
+                if (simplesNacionalChecked) {
+                    descontosIrrfField.style.display = 'none';
+                    if (descontarIssChecked) {
+                        descontosIssField.style.display = 'flex';
+                    } else {
+                        descontosIssField.style.display = 'none';
+                    }
+                } else {
+                    descontosIrrfField.style.display = 'flex';
+                    descontosIssField.style.display = 'flex';
+                }
+            }
         }
-      }
-    }
 
-    function calcularValorLiquido() {
-      const valorBruto = parseFloat(valorBrutoField.value) || 0;
-      const descontosIss = parseFloat(descontosIssInput.value) || 0;
-      const descontosIrrf = parseFloat(descontosIrrfInput.value) || 0;
-      const valorLiquido = valorBruto - descontosIss - descontosIrrf;
-      valorLiquidoField.value = valorLiquido.toFixed(2);
-    }
+        function formatCurrency(input) {
+            let value = input.value.replace(/\D/g, ""); // Remove tudo que não for número
+            value = (parseFloat(value) / 100).toFixed(2); // Divide por 100 e fixa 2 casas decimais
+            input.value = value.replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Formata como moeda brasileira
+        }
 
-    tipoNfField.addEventListener('change', toggleDescontoFields);
-    simplesNacionalField.addEventListener('change', toggleDescontoFields);
-    descontarIssField.addEventListener('change', toggleDescontoFields);
-    valorBrutoField.addEventListener('input', calcularValorLiquido);
-    descontosIssInput.addEventListener('input', calcularValorLiquido);
-    descontosIrrfInput.addEventListener('input', calcularValorLiquido);
+        function calcularValorLiquido() {
+            const valorBruto = parseFloat(valorBrutoField.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const descontosIss = parseFloat(descontosIssInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const descontosIrrf = parseFloat(descontosIrrfInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const valorLiquido = valorBruto - descontosIss - descontosIrrf;
+            valorLiquidoField.value = valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
-    toggleDescontoFields(); // Inicializa a exibição correta dos campos
-    calcularValorLiquido(); // Inicializa o valor líquido
-  });
+        tipoNfField.addEventListener('change', toggleDescontoFields);
+        simplesNacionalField.addEventListener('change', toggleDescontoFields);
+        descontarIssField.addEventListener('change', toggleDescontoFields);
+        valorBrutoField.addEventListener('input', calcularValorLiquido);
+        descontosIssInput.addEventListener('input', calcularValorLiquido);
+        descontosIrrfInput.addEventListener('input', calcularValorLiquido);
+
+        valorBrutoField.addEventListener('input', function() { formatCurrency(this); calcularValorLiquido(); });
+        descontosIssInput.addEventListener('input', function() { formatCurrency(this); calcularValorLiquido(); });
+        descontosIrrfInput.addEventListener('input', function() { formatCurrency(this); calcularValorLiquido(); });
+
+        toggleDescontoFields(); // Inicializa a exibição correta dos campos
+        calcularValorLiquido(); // Inicializa o valor líquido
+    });
 </script>
 {% endblock %}

@@ -108,17 +108,17 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'pt-br'
+LANGUAGE_CODE = 'pt-BR'
 
 TIME_ZONE = 'America/Sao_Paulo'
 
 USE_L10N = True  # Ativa a formatação local
 
-USE_THOUSAND_SEPARATOR = True  # Usa separador de milhar
-
 USE_I18N = True
 
 USE_TZ = True
+
+USE_THOUSAND_SEPARATOR = True  # Usa separador de milhar
 
 
 # Static files (CSS, JavaScript, Images)
