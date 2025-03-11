@@ -12,7 +12,7 @@
     <form method="post" class="needs-validation" novalidate>
         {% csrf_token %}
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="card">
                     <div class="card-header" style="font-weight: bold;">
                         HISTÓRICO DO BENEFICIÁRIO
@@ -38,103 +38,109 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <div class="card">
                     <div class="card-header" style="font-weight: bold;">
                         ENCARGOS DO BENEFICIÁRIO
                     </div>
                     <div class="card-body">
-                        <div class="mb-3 row">
-                            <label for="{{ form.tipo_nf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Tipo de NF</label>
-                            <div class="col-sm-8">
-                                {{ form.tipo_nf|add_attr:"class:form-control" }}
-                                <div class="invalid-feedback">
-                                    Por favor, selecione o tipo de nota fiscal.
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <div class="mb-3 row">
+                                    <label for="{{ form.tipo_nf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Tipo de NF</label>
+                                    <div class="col-sm-8">
+                                        {{ form.tipo_nf|add_attr:"class:form-control" }}
+                                        <div class="invalid-feedback">
+                                            Por favor, selecione o tipo de nota fiscal.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row justify-content-center">
+                                    <div class="col-sm-6 mb-3 text-center">
+                                        <label for="{{ form.simples_nacional.id_for_label }}" class="form-label" style="font-weight: bold;">Simples Nacional</label>
+                                        {{ form.simples_nacional|add_attr:"class:form-check-input" }}
+                                        <div class="invalid-feedback">
+                                            Por favor, indique se a empresa é do Simples Nacional.
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6 mb-3 text-center">
+                                        <label for="{{ form.descontar_iss.id_for_label }}" class="form-label" style="font-weight: bold;">Descontar ISS</label>
+                                        {{ form.descontar_iss|add_attr:"class:form-check-input" }}
+                                        <div class="invalid-feedback">
+                                            Por favor, indique se o ISS será descontado.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row justify-content-start">
+                                    <label for="{{ form.numero_nota_fiscal.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">nº da NF/NFSe</label>
+                                    <div class="col-sm-8 col-md-6">
+                                        {{ form.numero_nota_fiscal|add_attr:"class:form-control,placeholder:Digite o nº da NF..." }}
+                                        <div class="invalid-feedback">
+                                            Por favor, insira o número da nota fiscal.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row justify-content-center">
-                            <div class="col-sm-6 mb-3 text-center">
-                                <label for="{{ form.simples_nacional.id_for_label }}" class="form-label" style="font-weight: bold;">Simples Nacional</label>
-                                {{ form.simples_nacional|add_attr:"class:form-check-input" }}
-                                <div class="invalid-feedback">
-                                    Por favor, indique se a empresa é do Simples Nacional.
+                            <div class="col-md-6">
+                                <div class="mb-3 row justify-content-end">
+                                    <label for="{{ form.valor_bruto.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Bruto</label>
+                                    <div class="col-sm-8 col-md-6">
+                                        <input type="text" 
+                                            id="valor_bruto"
+                                            name="{{ form.valor_bruto.html_name }}"
+                                            class="form-control"
+                                            placeholder="Digite o valor bruto..."
+                                            style="color:blue;"
+                                            value="{{ form.valor_bruto.value|default:'' }}"
+                                            oninput="formatCurrency(this)">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-sm-6 mb-3 text-center">
-                                <label for="{{ form.descontar_iss.id_for_label }}" class="form-label" style="font-weight: bold;">Descontar ISS</label>
-                                {{ form.descontar_iss|add_attr:"class:form-check-input" }}
-                                <div class="invalid-feedback">
-                                    Por favor, indique se o ISS será descontado.
+                                <div class="mb-3 row justify-content-end" id="descontos_iss_row" style="display: none;">
+                                    <label for="{{ form.descontos_iss.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (ISS)</label>
+                                    <div class="col-sm-8 col-md-6">
+                                        <input type="text" 
+                                            id="descontos_iss"
+                                            name="{{ form.descontos_iss.html_name }}"
+                                            class="form-control"
+                                            placeholder="Digite o valor do ISS..."
+                                            style="color:red;"
+                                            value="{{ form.descontos_iss.value|default:'' }}"
+                                            oninput="formatCurrency(this)">
+                                        <div class="invalid-feedback">
+                                            Por favor, insira o valor do ISS.
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="mb-3 row justify-content-start">
-                            <label for="{{ form.numero_nota_fiscal.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">nº da NF/NFSe</label>
-                            <div class="col-sm-8 col-md-6">
-                                {{ form.numero_nota_fiscal|add_attr:"class:form-control,placeholder:Digite o nº da NF..." }}
-                                <div class="invalid-feedback">
-                                    Por favor, insira o número da nota fiscal.
+                                <div class="mb-3 row justify-content-end" id="descontos_irrf_row" style="display: none;">
+                                    <label for="{{ form.descontos_irrf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (IR)</label>
+                                    <div class="col-sm-8 col-md-6">
+                                        <input type="text" 
+                                            id="descontos_irrf"
+                                            name="{{ form.descontos_irrf.html_name }}"
+                                            class="form-control"
+                                            placeholder="Digite o valor do IRRF..."
+                                            style="color:red;"
+                                            value="{{ form.descontos_irrf.value|default:'' }}"
+                                            oninput="formatCurrency(this)">
+                                        <div class="invalid-feedback">
+                                            Por favor, insira o valor do IRRF.
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="mb-3 row justify-content-end">
-                            <label for="{{ form.valor_bruto.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Bruto</label>
-                            <div class="col-sm-8 col-md-6">
-                                <input type="text" 
-                                    id="valor_bruto"
-                                    name="{{ form.valor_bruto.html_name }}"
-                                    class="form-control"
-                                    placeholder="Digite o valor bruto..."
-                                    style="color:blue;"
-                                    value="{{ form.valor_bruto.value|default:'' }}"
-                                    oninput="formatCurrency(this)">
-                            </div>
-                        </div>
-                        <div class="mb-3 row justify-content-end" id="descontos_iss_row" style="display: none;">
-                            <label for="{{ form.descontos_iss.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (ISS)</label>
-                            <div class="col-sm-8 col-md-6">
-                                <input type="text" 
-                                    id="descontos_iss"
-                                    name="{{ form.descontos_iss.html_name }}"
-                                    class="form-control"
-                                    placeholder="Digite os descontos do ISS..."
-                                    style="color:red;"
-                                    value="{{ form.descontos_iss.value|default:'' }}"
-                                    oninput="formatCurrency(this)">
-                                <div class="invalid-feedback">
-                                    Por favor, insira os descontos do ISS.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3 row justify-content-end" id="descontos_irrf_row" style="display: none;">
-                            <label for="{{ form.descontos_irrf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (IRRF)</label>
-                            <div class="col-sm-8 col-md-6">
-                                <input type="text" 
-                                    id="descontos_irrf"
-                                    name="{{ form.descontos_irrf.html_name }}"
-                                    class="form-control"
-                                    placeholder="Digite os descontos do IRRF..."
-                                    style="color:red;"
-                                    value="{{ form.descontos_irrf.value|default:'' }}"
-                                    oninput="formatCurrency(this)">
-                                <div class="invalid-feedback">
-                                    Por favor, insira os descontos do IRRF.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3 row justify-content-end">
-                            <label for="{{ form.valor_liquido.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Líquido</label>
-                            <div class="col-sm-8 col-md-6">
-                                <input type="text" 
-                                    id="valor_liquido"
-                                    name="{{ form.valor_liquido.html_name }}"
-                                    class="form-control"
-                                    readonly
-                                    style="color:green; font-weight:bold;"
-                                    value="{{ form.valor_liquido.value|default:'' }}">
-                                <div class="invalid-feedback">
-                                    Por favor, insira o valor líquido.
+                                <div class="mb-3 row justify-content-end">
+                                    <label for="{{ form.valor_liquido.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Líquido</label>
+                                    <div class="col-sm-8 col-md-6">
+                                        <input type="text" 
+                                            id="valor_liquido"
+                                            name="{{ form.valor_liquido.html_name }}"
+                                            class="form-control"
+                                            readonly
+                                            style="color:green; font-weight:bold;"
+                                            value="{{ form.valor_liquido.value|default:'' }}">
+                                        <div class="invalid-feedback">
+                                            Por favor, insira o valor líquido.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
