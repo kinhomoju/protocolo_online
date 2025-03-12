@@ -21,11 +21,11 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="numero_protocolo" class="form-label" style="font-weight: bold;">nº do Protocolo</label>
-                                <input type="text" id="numero_protocolo" class="form-control" value="{{ protocolo_numero }}" readonly>
+                                <input type="text" id="numero_protocolo" class="form-control border-0 w-100" style="padding-left: 0; padding-right: 0;" value="{{ protocolo_numero }}" readonly>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="data_hora" class="form-label" style="font-weight: bold;">Data/Hora</label>
-                                <input type="text" id="data_hora" class="form-control" value="{{ data_hora }}" readonly>
+                                <input type="text" id="data_hora" class="form-control border-0 w-100" style="padding-left: 0; padding-right: 0;" value="{{ data_hora }}" readonly>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -71,39 +71,39 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mb-3 row justify-content-start">
-                                    <label for="{{ form.numero_nota_fiscal.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">nº da NF/NFSe</label>
-                                    <div class="col-sm-8 col-md-6">
-                                        {{ form.numero_nota_fiscal|add_attr:"class:form-control,placeholder:Digite o nº da NF..." }}
+                                <div class="mb-3 row justify-content-center">
+                                    <label for="{{ form.numero_nota_fiscal.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">nº da NF/NFSe</label>
+                                    <div class="col-sm-6 col-md-6">
+                                        {{ form.numero_nota_fiscal|add_attr:"class:form-control,placeholder:digite o nº da NF..." }}
                                         <div class="invalid-feedback">
-                                            Por favor, insira o número da nota fiscal.
+                                            Por favor, insira o número da NF.
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6 text-end">
                                 <div class="mb-3 row justify-content-end">
-                                    <label for="{{ form.valor_bruto.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Bruto</label>
+                                    <label for="{{ form.valor_bruto.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">Valor Bruto</label>
                                     <div class="col-sm-8 col-md-6">
                                         <input type="text" 
                                             id="valor_bruto"
                                             name="{{ form.valor_bruto.html_name }}"
-                                            class="form-control"
-                                            placeholder="Digite o valor bruto..."
-                                            style="color:blue;"
+                                            class="form-control text-end"
+                                            placeholder="digite o valor bruto..."
+                                            style="color:blue; width: 100%;"
                                             value="{{ form.valor_bruto.value|default:'' }}"
                                             oninput="formatCurrency(this)">
                                     </div>
                                 </div>
                                 <div class="mb-3 row justify-content-end" id="descontos_iss_row" style="display: none;">
-                                    <label for="{{ form.descontos_iss.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (ISS)</label>
+                                    <label for="{{ form.descontos_iss.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">Desconto (ISS)</label>
                                     <div class="col-sm-8 col-md-6">
                                         <input type="text" 
                                             id="descontos_iss"
                                             name="{{ form.descontos_iss.html_name }}"
-                                            class="form-control"
-                                            placeholder="Digite o valor do ISS..."
-                                            style="color:red;"
+                                            class="form-control text-end"
+                                            placeholder="digite o ISS..."
+                                            style="color:red; width: 100%;"
                                             value="{{ form.descontos_iss.value|default:'' }}"
                                             oninput="formatCurrency(this)">
                                         <div class="invalid-feedback">
@@ -112,14 +112,14 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 row justify-content-end" id="descontos_irrf_row" style="display: none;">
-                                    <label for="{{ form.descontos_irrf.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Desconto (IR)</label>
+                                    <label for="{{ form.descontos_irrf.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">Desconto (IRRF)</label>
                                     <div class="col-sm-8 col-md-6">
                                         <input type="text" 
                                             id="descontos_irrf"
                                             name="{{ form.descontos_irrf.html_name }}"
-                                            class="form-control"
-                                            placeholder="Digite o valor do IRRF..."
-                                            style="color:red;"
+                                            class="form-control text-end"
+                                            placeholder="digite o IRRF..."
+                                            style="color:red; width: 100%;"
                                             value="{{ form.descontos_irrf.value|default:'' }}"
                                             oninput="formatCurrency(this)">
                                         <div class="invalid-feedback">
@@ -128,14 +128,14 @@
                                     </div>
                                 </div>
                                 <div class="mb-3 row justify-content-end">
-                                    <label for="{{ form.valor_liquido.id_for_label }}" class="col-sm-4 col-form-label" style="font-weight: bold;">Valor Líquido</label>
+                                    <label for="{{ form.valor_liquido.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">Valor Líquido</label>
                                     <div class="col-sm-8 col-md-6">
                                         <input type="text" 
                                             id="valor_liquido"
                                             name="{{ form.valor_liquido.html_name }}"
-                                            class="form-control"
+                                            class="form-control text-end"
                                             readonly
-                                            style="color:green; font-weight:bold;"
+                                            style="color:green; font-weight:bold; width: 100%;"
                                             value="{{ form.valor_liquido.value|default:'' }}">
                                         <div class="invalid-feedback">
                                             Por favor, insira o valor líquido.
