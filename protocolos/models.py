@@ -1,7 +1,7 @@
 from django.db import models, transaction
 from django.utils import timezone
 from django.conf import settings
-import uuid
+import os
 
 class Protocolo(models.Model):
     TIPO_PF_CHOICES = [
@@ -32,10 +32,10 @@ class Protocolo(models.Model):
     nome = models.CharField(max_length=150)
     endereco = models.CharField(max_length=255, default='Endereço padrão')
     descricao_servicos = models.TextField(max_length=150)
-    valor_bruto = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    descontos_iss = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    descontos_irrf = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    valor_liquido = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    valor_bruto = models.DecimalField(max_digits=14, decimal_places=2, blank=True, default=0)
+    descontos_iss = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    descontos_irrf = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    valor_liquido = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     data = models.DateField(default=timezone.now)
     cnpj = models.CharField(max_length=18, blank=True)
     nome_empresa = models.CharField(max_length=255, blank=True)
@@ -59,3 +59,14 @@ class Protocolo(models.Model):
 
     def __str__(self):
         return self.numero
+
+def protocolo_anexo_upload_to(instance, filename):
+    return os.path.join('anexos', f'protocolo_{instance.protocolo.numero}', filename)
+
+class ProtocoloAnexo(models.Model):
+    protocolo = models.ForeignKey(Protocolo, on_delete=models.CASCADE, related_name='anexos')
+    arquivo = models.FileField(upload_to=protocolo_anexo_upload_to)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Anexo {self.id} do Protocolo {self.protocolo.numero}"

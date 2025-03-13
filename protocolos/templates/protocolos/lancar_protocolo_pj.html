@@ -9,7 +9,7 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4 text-center">.::: Lançamento de Protocolo :::.</h1>
-    <form method="post" class="needs-validation" novalidate>
+    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
         {% csrf_token %}
         <div class="row">
             <div class="col-md-4">
@@ -19,11 +19,11 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-sm-6 mb-3">
                                 <label for="numero_protocolo" class="form-label" style="font-weight: bold;">nº do Protocolo</label>
                                 <input type="text" id="numero_protocolo" class="form-control border-0 w-100" style="padding-left: 0; padding-right: 0;" value="{{ protocolo_numero }}" readonly>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-sm-6 mb-3">
                                 <label for="data_hora" class="form-label" style="font-weight: bold;">Data/Hora</label>
                                 <input type="text" id="data_hora" class="form-control border-0 w-100" style="padding-left: 0; padding-right: 0;" value="{{ data_hora }}" readonly>
                             </div>
@@ -74,7 +74,7 @@
                                 <div class="mb-3 row justify-content-center">
                                     <label for="{{ form.numero_nota_fiscal.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">nº da NF/NFSe</label>
                                     <div class="col-sm-6 col-md-6">
-                                        {{ form.numero_nota_fiscal|add_attr:"class:form-control,placeholder:digite o nº da NF..." }}
+                                        {{ form.numero_nota_fiscal|add_attr:"class:form-control text-end,placeholder:digite o nº da NF..." }}
                                         <div class="invalid-feedback">
                                             Por favor, insira o número da NF.
                                         </div>
@@ -84,7 +84,7 @@
                             <div class="col-md-6 text-end">
                                 <div class="mb-3 row justify-content-end">
                                     <label for="{{ form.valor_bruto.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">Valor Bruto</label>
-                                    <div class="col-sm-8 col-md-6">
+                                    <div class="col-sm-6 col-md-6">
                                         <input type="text" 
                                             id="valor_bruto"
                                             name="{{ form.valor_bruto.html_name }}"
@@ -97,7 +97,7 @@
                                 </div>
                                 <div class="mb-3 row justify-content-end" id="descontos_iss_row" style="display: none;">
                                     <label for="{{ form.descontos_iss.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">Desconto (ISS)</label>
-                                    <div class="col-sm-8 col-md-6">
+                                    <div class="col-sm-6 col-md-6">
                                         <input type="text" 
                                             id="descontos_iss"
                                             name="{{ form.descontos_iss.html_name }}"
@@ -113,7 +113,7 @@
                                 </div>
                                 <div class="mb-3 row justify-content-end" id="descontos_irrf_row" style="display: none;">
                                     <label for="{{ form.descontos_irrf.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">Desconto (IRRF)</label>
-                                    <div class="col-sm-8 col-md-6">
+                                    <div class="col-sm-6 col-md-6">
                                         <input type="text" 
                                             id="descontos_irrf"
                                             name="{{ form.descontos_irrf.html_name }}"
@@ -129,7 +129,7 @@
                                 </div>
                                 <div class="mb-3 row justify-content-end">
                                     <label for="{{ form.valor_liquido.id_for_label }}" class="col-sm-6 col-form-label text-end" style="font-weight: bold;">Valor Líquido</label>
-                                    <div class="col-sm-8 col-md-6">
+                                    <div class="col-sm-6 col-md-6">
                                         <input type="text" 
                                             id="valor_liquido"
                                             name="{{ form.valor_liquido.html_name }}"
@@ -144,6 +144,15 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="anexos-container">
+                            {{ formset.management_form }}
+                            {% if formset.forms|length == 0 %}
+                                <div class="mb-2">
+                                    <input type="file" name="anexos[]" class="form-control" accept=".pdf">
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button type="button" id="add-anexo-btn" class="btn btn-success btn-sm mt-2">Adicionar Anexo</button>                        
                     </div>
                 </div>
             </div>
@@ -156,26 +165,6 @@
 </div>
 
 <script>
-    // Exemplo de JavaScript para desativar o envio do formulário, se houver campos inválidos.
-    (function() {
-        'use strict';
-        window.addEventListener('load', function() {
-            // Pega todos os formulários que nós queremos aplicar estilos de validação Bootstrap personalizados.
-            var forms = document.getElementsByClassName('needs-validation');
-            // Faz um loop neles e evita o envio.
-            var validation = Array.prototype.filter.call(forms, function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        }, false);
-    })();
-
-    // JavaScript para exibir ou ocultar os campos de desconto com base nas seleções feitas pelo usuário.
     document.addEventListener('DOMContentLoaded', function() {
         const tipoNfField = document.getElementById('{{ form.tipo_nf.id_for_label }}');
         const simplesNacionalField = document.getElementById('{{ form.simples_nacional.id_for_label }}');
@@ -186,6 +175,8 @@
         const descontosIssInput = document.getElementById('descontos_iss');
         const descontosIrrfInput = document.getElementById('descontos_irrf');
         const valorLiquidoField = document.getElementById('valor_liquido');
+        const anexosContainer = document.getElementById('anexos-container');
+        const addAnexoButton = document.getElementById('add-anexo-btn');
 
         function toggleDescontoFields() {
             const tipoNfValue = tipoNfField.value;
@@ -198,11 +189,7 @@
             } else if (tipoNfValue === 'NFSe') {
                 if (simplesNacionalChecked) {
                     descontosIrrfField.style.display = 'none';
-                    if (descontarIssChecked) {
-                        descontosIssField.style.display = 'flex';
-                    } else {
-                        descontosIssField.style.display = 'none';
-                    }
+                    descontosIssField.style.display = descontarIssChecked ? 'flex' : 'none';
                 } else {
                     descontosIrrfField.style.display = 'flex';
                     descontosIssField.style.display = 'flex';
@@ -211,9 +198,9 @@
         }
 
         function formatCurrency(input) {
-            let value = input.value.replace(/\D/g, ""); // Remove tudo que não for número
-            value = (parseFloat(value) / 100).toFixed(2); // Divide por 100 e fixa 2 casas decimais
-            input.value = value.replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Formata como moeda brasileira
+            let value = input.value.replace(/\D/g, "");
+            value = (parseFloat(value) / 100).toFixed(2);
+            input.value = value.replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
         function calcularValorLiquido() {
@@ -222,6 +209,20 @@
             const descontosIrrf = parseFloat(descontosIrrfInput.value.replace(/\./g, '').replace(',', '.')) || 0;
             const valorLiquido = valorBruto - descontosIss - descontosIrrf;
             valorLiquidoField.value = valorLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function adicionarCampoAnexo() {
+            const novoCampo = document.createElement('div');
+            novoCampo.classList.add('mb-2');
+            novoCampo.innerHTML = `
+                <input type="file" name="anexos[]" class="form-control" accept=".pdf">
+                <button type="button" class="btn btn-danger btn-sm mt-1 remover-anexo">Remover</button>
+            `;
+            anexosContainer.appendChild(novoCampo);
+
+            novoCampo.querySelector('.remover-anexo').addEventListener('click', function() {
+                novoCampo.remove();
+            });
         }
 
         tipoNfField.addEventListener('change', toggleDescontoFields);
@@ -235,8 +236,11 @@
         descontosIssInput.addEventListener('input', function() { formatCurrency(this); calcularValorLiquido(); });
         descontosIrrfInput.addEventListener('input', function() { formatCurrency(this); calcularValorLiquido(); });
 
-        toggleDescontoFields(); // Inicializa a exibição correta dos campos
-        calcularValorLiquido(); // Inicializa o valor líquido
+        addAnexoButton.addEventListener('click', adicionarCampoAnexo);
+
+        toggleDescontoFields();
+        calcularValorLiquido();
     });
 </script>
+
 {% endblock %}

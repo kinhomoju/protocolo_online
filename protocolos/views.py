@@ -5,10 +5,11 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.utils import timezone
+from django.forms import modelformset_factory
 
 from usuarios.models import Usuario
-from .models import Protocolo
-from .forms import ProtocoloForm, ProtocoloPFForm, ProtocoloPJForm
+from .models import Protocolo, ProtocoloAnexo
+from .forms import ProtocoloForm, ProtocoloPFForm, ProtocoloPJForm, ProtocoloAnexoForm
 
 
 def gerar_numero_protocolo():
@@ -68,21 +69,31 @@ def lancar_protocolo_pj(request):
     data_hora = timezone.localtime(timezone.now()).strftime('%d/%m/%Y %H:%M:%S')
     
     if request.method == 'POST':
-        form = ProtocoloPJForm(request.POST)
-        if form.is_valid():
+        form = ProtocoloPJForm(request.POST, request.FILES)
+        anexo_formset = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
+        formset = anexo_formset(request.POST, request.FILES, queryset=ProtocoloAnexo.objects.none())
+
+        if form.is_valid() and formset.is_valid():
             protocolo = form.save(commit=False)
             protocolo.numero = provisional_number
             protocolo.data_hora_lancamento = timezone.now()
             protocolo.status = 'pendente'
             protocolo.usuario = request.user
             protocolo.save()
+            for form in formset.cleaned_data:
+                if form:
+                    anexo = form['arquivo']
+                    ProtocoloAnexo.objects.create(protocolo=protocolo, arquivo=anexo)
             messages.success(request, f"Protocolo {protocolo.numero} salvo com sucesso.")
             return redirect('protocolos:comprovante', protocolo_id=protocolo.id)
     else:
         form = ProtocoloPJForm()
-    
+        anexo_formset = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
+        formset = anexo_formset(queryset=ProtocoloAnexo.objects.none())
+
     return render(request, 'protocolos/lancar_protocolo_pj.html', {
         'form': form,
+        'formset': formset,
         'protocolo_numero': provisional_number,
         'data_hora': data_hora,
     })
@@ -142,3 +153,43 @@ def excluir_protocolo(request, protocolo_id):
 def comprovante_protocolo(request, protocolo_id):
     protocolo = get_object_or_404(Protocolo, id=protocolo_id)
     return render(request, 'protocolos/comprovante_protocolo.html', {'protocolo': protocolo})
+
+def criar_protocolo(request):
+    if request.method == 'POST':
+        form = ProtocoloForm(request.POST)
+        anexo_formset = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
+        formset = anexo_formset(request.POST, request.FILES, queryset=ProtocoloAnexo.objects.none())
+
+        if form.is_valid() and formset.is_valid():
+            protocolo = form.save()
+            for form in formset.cleaned_data:
+                if form:
+                    anexo = form['arquivo']
+                    ProtocoloAnexo.objects.create(protocolo=protocolo, arquivo=anexo)
+            return redirect('protocolo_sucesso')
+    else:
+        form = ProtocoloForm()
+        anexo_formset = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
+        formset = anexo_formset(queryset=ProtocoloAnexo.objects.none())
+
+    return render(request, 'protocolos/criar_protocolo.html', {'form': form, 'formset': formset})
+
+def criar_protocolo_pj(request):
+    if request.method == 'POST':
+        form = ProtocoloPJForm(request.POST)
+        anexo_formset = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
+        formset = anexo_formset(request.POST, request.FILES, queryset=ProtocoloAnexo.objects.none())
+
+        if form.is_valid() and formset.is_valid():
+            protocolo = form.save()
+            for form in formset.cleaned_data:
+                if form:
+                    anexo = form['arquivo']
+                    ProtocoloAnexo.objects.create(protocolo=protocolo, arquivo=anexo)
+            return redirect('protocolo_sucesso')
+    else:
+        form = ProtocoloPJForm()
+        anexo_formset = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
+        formset = anexo_formset(queryset=ProtocoloAnexo.objects.none())
+
+    return render(request, 'protocolos/lancar_protocolo_pj.html', {'form': form, 'formset': formset})
