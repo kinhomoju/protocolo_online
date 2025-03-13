@@ -68,10 +68,11 @@ def lancar_protocolo_pj(request):
     provisional_number = gerar_numero_protocolo()
     data_hora = timezone.localtime(timezone.now()).strftime('%d/%m/%Y %H:%M:%S')
     
+    AnexoFormSet = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
+    
     if request.method == 'POST':
         form = ProtocoloPJForm(request.POST, request.FILES)
-        anexo_formset = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
-        formset = anexo_formset(request.POST, request.FILES, queryset=ProtocoloAnexo.objects.none())
+        formset = AnexoFormSet(request.POST, request.FILES, queryset=ProtocoloAnexo.objects.none())
 
         if form.is_valid() and formset.is_valid():
             protocolo = form.save(commit=False)
@@ -80,16 +81,18 @@ def lancar_protocolo_pj(request):
             protocolo.status = 'pendente'
             protocolo.usuario = request.user
             protocolo.save()
-            for form in formset.cleaned_data:
-                if form:
-                    anexo = form['arquivo']
-                    ProtocoloAnexo.objects.create(protocolo=protocolo, arquivo=anexo)
+            for form in formset:
+                if form.cleaned_data:
+                    anexo = form.save(commit=False)
+                    anexo.protocolo = protocolo
+                    anexo.save()
             messages.success(request, f"Protocolo {protocolo.numero} salvo com sucesso.")
             return redirect('protocolos:comprovante', protocolo_id=protocolo.id)
+        else:
+            messages.error(request, "Erro ao salvar o protocolo. Verifique os dados e tente novamente.")
     else:
         form = ProtocoloPJForm()
-        anexo_formset = modelformset_factory(ProtocoloAnexo, form=ProtocoloAnexoForm, extra=15, max_num=15)
-        formset = anexo_formset(queryset=ProtocoloAnexo.objects.none())
+        formset = AnexoFormSet(queryset=ProtocoloAnexo.objects.none())
 
     return render(request, 'protocolos/lancar_protocolo_pj.html', {
         'form': form,

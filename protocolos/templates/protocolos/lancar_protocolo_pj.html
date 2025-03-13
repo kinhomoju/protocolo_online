@@ -9,6 +9,21 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4 text-center">.::: Lançamento de Protocolo :::.</h1>
+    
+    <!-- Exibir mensagens de sucesso ou erro -->
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
     <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
         {% csrf_token %}
         <div class="row">
@@ -146,11 +161,7 @@
                         </div>
                         <div id="anexos-container">
                             {{ formset.management_form }}
-                            {% if formset.forms|length == 0 %}
-                                <div class="mb-2">
-                                    <input type="file" name="anexos[]" class="form-control" accept=".pdf">
-                                </div>
-                            {% endif %}
+                            <!-- Campos de anexo serão adicionados aqui dinamicamente -->
                         </div>
                         <button type="button" id="add-anexo-btn" class="btn btn-success btn-sm mt-2">Adicionar Anexo</button>                        
                     </div>
@@ -177,6 +188,9 @@
         const valorLiquidoField = document.getElementById('valor_liquido');
         const anexosContainer = document.getElementById('anexos-container');
         const addAnexoButton = document.getElementById('add-anexo-btn');
+
+        // Inicialmente, o container de anexos deve estar vazio
+        anexosContainer.innerHTML = '';
 
         function toggleDescontoFields() {
             const tipoNfValue = tipoNfField.value;
