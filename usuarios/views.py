@@ -92,19 +92,19 @@ def completar_cadastro(request):
     return render(request, 'usuarios/completar_cadastro.html', {'form': form})
 
 # Dashboard para usuários comum
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from protocolos.models import ProtocoloPF, ProtocoloPJ
+
 @login_required
 def dashboard(request):
-    if not request.user.is_approved:
-        return render(request, 'usuarios/nao_aprovado.html')
-    
-    # Verifica se o usuário possui perfil; caso contrário, redirecione para completar cadastro
-    if not hasattr(request.user, 'perfil'):
-        return redirect('usuarios:completar_cadastro')
-    
-    # Supondo que você tenha implementado uma forma de filtrar os protocolos lançados pelo usuário
-    from protocolos.models import Protocolo  # Importação local para evitar dependência circular
-    protocolos_usuario = Protocolo.objects.filter(usuario=request.user).order_by('-data_criacao')
-    
+    protocolos_pf = ProtocoloPF.objects.filter(usuario=request.user).order_by('-data_hora_lancamento')
+    protocolos_pj = ProtocoloPJ.objects.filter(usuario=request.user).order_by('-data_hora_lancamento')
+
+    # Combine os resultados
+    protocolos_usuario = list(protocolos_pf) + list(protocolos_pj)
+    protocolos_usuario.sort(key=lambda x: x.data_hora_lancamento, reverse=True)
+
     return render(request, 'usuarios/dashboard.html', {
         'protocolos_usuario': protocolos_usuario,
     })

@@ -7,7 +7,6 @@ app_name = 'protocolos'
 
 urlpatterns = [
     path('pesquisa/', views.pesquisa_protocolos, name='pesquisa_protocolos'),
-    path('lancar/', views.lancar_protocolo, name='lancar_protocolo'),
     path('lancar_pf/', views.lancar_protocolo_pf, name='lancar_protocolo_pf'),
     path('lancar_pj/', views.lancar_protocolo_pj, name='lancar_protocolo_pj'),
     path('comprovante/<int:protocolo_id>/', views.comprovante_protocolo, name='comprovante'),

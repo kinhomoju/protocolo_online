@@ -44,8 +44,8 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="{{ form.descricao_servicos.id_for_label }}" class="form-label" style="font-weight: bold;">Descrição dos Serviços</label>
-                            {{ form.descricao_servicos|add_attr:"class:form-control,placeholder:Descreva os serviços prestados..." }}
+                            <label for="{{ form.descricao.id_for_label }}" class="form-label" style="font-weight: bold;">Descrição dos Serviços</label>
+                            {{ form.descricao|add_attr:"class:form-control,placeholder:Descreva os serviços prestados..." }}
                             <div class="invalid-feedback">
                                 Por favor, insira a descrição dos serviços.
                             </div>
@@ -161,7 +161,14 @@
                         </div>
                         <div id="anexos-container">
                             {{ formset.management_form }}
-                            <!-- Campos de anexo serão adicionados aqui dinamicamente -->
+                            {% for form in formset %}
+                                <div class="mb-2">
+                                    {{ form.arquivo.label_tag }} {{ form.arquivo }}
+                                    <div class="invalid-feedback">
+                                        Por favor, anexe um arquivo PDF.
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                         <button type="button" id="add-anexo-btn" class="btn btn-success btn-sm mt-2">Adicionar Anexo</button>                        
                     </div>
@@ -176,6 +183,28 @@
 </div>
 
 <script>
+    // Exemplo de JavaScript para desativar o envio do formulário, se houver campos inválidos.
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            // Pega todos os formulários que nós queremos aplicar estilos de validação Bootstrap personalizados.
+            var forms = document.getElementsByClassName('needs-validation');
+            // Faz um loop neles e evita o envio.
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+
+<script>
+    // JavaScript para exibir ou ocultar os campos de desconto com base nas seleções feitas pelo usuário.
     document.addEventListener('DOMContentLoaded', function() {
         const tipoNfField = document.getElementById('{{ form.tipo_nf.id_for_label }}');
         const simplesNacionalField = document.getElementById('{{ form.simples_nacional.id_for_label }}');
