@@ -13,7 +13,7 @@
         </div>
     </div>
     
-    <!-- Linha de Ações: Lançar Novo Protocolo e Pesquisa de Protocolos -->
+    <!-- Linha de Ações -->
     <div class="row mt-4">
         <div class="d-flex flex-column flex-md-row justify-content-center gap-2 mt-3">
             <a href="{% url 'protocolos:lancar_protocolo_pj' %}" class="btn btn-success">Lançar Novo Protocolo</a>
@@ -38,6 +38,22 @@
     </div>
     {% endif %}
 
+    <!-- Filtro de Protocolos -->
+    <div class="row mt-4 justify-content-center">
+        <div class="col-md-6">
+            <form method="get" action="{% url 'usuarios:dashboard' %}" class="input-group">
+                <select name="status" class="form-select">
+                    <option value="">Todos os Status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="analise">Em Análise</option>
+                    <option value="pago">Pago</option>
+                    <option value="rejeitado">Rejeitado</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Card de Meus Protocolos -->
     <div class="row mt-4 justify-content-center">
         <div class="col-12">
@@ -59,34 +75,29 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for protocolo in protocolos_usuario|slice:":5" %}
+                                {% for protocolo in protocolos_usuario %}
                                 <tr>
                                     <td>{{ protocolo.numero }}</td>
                                     <td>{{ protocolo.descricao }}</td>
                                     <td>
-                                        {% if protocolo.status == 'pago' %}
-                                            <span class="badge bg-success">Pago</span>
-                                        {% elif protocolo.status == 'rejeitado' %}
-                                            <span class="badge bg-warning text-dark">Rejeitado</span>
-                                        {% elif protocolo.status == 'analise' %}
-                                            <span class="badge bg-primary">Em análise</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary">Pendente</span>
-                                        {% endif %}
+                                        <span class="badge {% if protocolo.status == 'pago' %}bg-success{% elif protocolo.status == 'rejeitado' %}bg-warning text-dark{% elif protocolo.status == 'analise' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                            {{ protocolo.get_status_display }}
+                                        </span>
                                     </td>
                                     <td>{{ protocolo.data_criacao|date:"d/m/Y H:i" }}</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            {% if protocolo.status == 'pendente' %}
-                                                <a href="{% url 'protocolos:editar_protocolo' protocolo.id %}" class="btn btn-warning btn-sm">Corrigir</a>
-                                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ protocolo.id }}">
-                                                    Excluir
-                                                </button>
-                                                <!-- Incluindo o modal de confirmação -->
-                                                {% include 'includes/_modal_confirmacao_exclusao.html' with item_id=protocolo.id item_nome=protocolo.numero item_tipo='protocolo' excluir_url='protocolos:excluir_protocolo' %}
-                                            {% else %}
-                                                <span class="text-muted">tramitado...</span>
-                                            {% endif %}
+                                    <td class="text-center">
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                Opções
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                {% if protocolo.status == 'pendente' %}
+                                                    <li><a class="dropdown-item" href="{% url 'protocolos:editar_protocolo' protocolo.id %}">Corrigir</a></li>
+                                                    <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#confirmarExclusao{{ protocolo.id }}">Excluir</a></li>
+                                                {% else %}
+                                                    <li><span class="dropdown-item text-muted">Tramitado</span></li>
+                                                {% endif %}
+                                            </ul>
                                         </div>
                                     </td>
                                 </tr>
@@ -94,8 +105,20 @@
                             </tbody>
                         </table>
                     </div>
+                    <!-- Paginação -->
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            {% if protocolos_usuario.has_previous %}
+                                <li class="page-item"><a class="page-link" href="?page={{ protocolos_usuario.previous_page_number }}">Anterior</a></li>
+                            {% endif %}
+                            <li class="page-item active"><span class="page-link">{{ protocolos_usuario.number }}</span></li>
+                            {% if protocolos_usuario.has_next %}
+                                <li class="page-item"><a class="page-link" href="?page={{ protocolos_usuario.next_page_number }}">Próximo</a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
                     {% else %}
-                    <p class="text-center">Você ainda não lançou nenhum protocolo.</p>
+                    <p class="text-center text-muted">Você ainda não lançou nenhum protocolo.</p>
                     {% endif %}
                 </div>
             </div>

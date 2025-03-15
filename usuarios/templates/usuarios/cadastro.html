@@ -23,15 +23,30 @@
 
     <!-- Exibição de mensagens -->
     {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
     {% endif %}
 
     <!-- Formulário de cadastro -->
     <form method="post" class="bg-light p-4 rounded shadow-sm">
         {% csrf_token %}
-        {{ form.as_p }}
+        
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        
         <button type="submit" class="btn btn-primary btn-block">Cadastrar</button>
     </form>
 

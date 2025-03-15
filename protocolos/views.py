@@ -73,6 +73,8 @@ def lancar_protocolo_pj(request):
             protocolo.data_hora_lancamento = timezone.now()
             protocolo.status = 'pendente'
             protocolo.usuario = request.user
+            protocolo.nome = request.user.nome  # Preenchendo o nome do usuário
+            protocolo.endereco = request.user.endereco  # Preenchendo o endereço do usuário
             protocolo.save()
 
             for form_data in formset.cleaned_data:

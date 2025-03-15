@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
@@ -6,21 +7,20 @@ from django.core.paginator import Paginator
 
 from protocolos.models import Protocolo
 from .models import Usuario, Perfil
-from .forms import UsuarioCadastroForm, PerfilPJForm, PerfilPFForm
-from django import forms
+from .forms import UsuarioCadastroForm, UsuarioLoginForm, PerfilPJForm, PerfilPFForm
 
-# Formulário de login (caso não tenha um UsuarioLoginForm no arquivo forms.py)
-class UsuarioLoginForm(forms.Form):
-    username = forms.CharField(label="Usuário", max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(label="Senha", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+# Configurar o logger
+logger = logging.getLogger(__name__)
 
 # Cadastro de usuários
 def cadastro(request):
     if request.method == 'POST':
         form = UsuarioCadastroForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Cadastro realizado com sucesso! Faça login para continuar.')
+            usuario = form.save(commit=False)
+            usuario.is_approved = False  # Cadastro precisa ser aprovado
+            usuario.save()
+            messages.success(request, 'Cadastro realizado! Aguarde a aprovação do administrador.')
             return redirect('usuarios:login')
     else:
         form = UsuarioCadastroForm()
@@ -28,203 +28,183 @@ def cadastro(request):
 
 # Login de usuários
 def login_usuario(request):
+    logger.debug("Iniciando o processo de login")
     if request.method == 'POST':
+        logger.debug("Método POST recebido")
         form = UsuarioLoginForm(request.POST)
         if form.is_valid():
+            logger.debug("Formulário de login é válido")
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            logger.debug(f"Autenticando usuário: {username}")
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
+                logger.debug(f"Usuário autenticado: {user.username}")
                 if not user.is_approved:
+                    logger.warning(f"Usuário não aprovado: {user.username}")
                     messages.warning(request, "Seu cadastro ainda não foi aprovado. Aguarde a aprovação de um administrador.")
                     return redirect('usuarios:nao_aprovado')
-                
+
                 login(request, user)
-                # Se o usuário ainda não tem perfil completo, redirecione para a view de completar cadastro
+                logger.debug(f"Usuário logado: {user.username}")
                 if not hasattr(user, 'perfil'):
                     return redirect('usuarios:completar_cadastro')
-                if user.is_master:
+                elif user.is_master:
                     return redirect('usuarios:dashboard_master')
                 else:
                     return redirect('usuarios:dashboard')
             else:
+                logger.error("Credenciais inválidas")
                 form.add_error(None, "Credenciais inválidas")
+                messages.error(request, "Credenciais inválidas")
+        else:
+            logger.error("Formulário inválido")
+            logger.error(form.errors)
+            for field in form:
+                logger.error(f"Erro no campo {field.name}: {field.errors}")
+            messages.error(request, "Formulário inválido")
     else:
+        logger.debug("Método GET recebido")
         form = UsuarioLoginForm()
 
     return render(request, 'usuarios/login.html', {'form': form})
 
-# View para completar o cadastro (primeiro acesso do usuário comum aprovado)
+# View para completar o cadastro
 @login_required
 def completar_cadastro(request):
-    # Se o usuário já possui um perfil, redirecione para o dashboard
     if hasattr(request.user, 'perfil'):
         if request.user.is_master:
             return redirect('usuarios:dashboard_master')
         return redirect('usuarios:dashboard')
-    
-    # O usuário aprovado deve ter seu campo 'tipo' preenchido pelo master
-    tipo = request.user.tipo  # Espera 'PJ' ou 'PF'
+
+    tipo = request.user.tipo
     if not tipo:
-        messages.error(request, "O seu tipo de cadastro não foi definido. Por favor, contate o administrador.")
+        messages.error(request, "Seu tipo de cadastro não foi definido. Contate o administrador.")
         return redirect('usuarios:dashboard')
-    
+
+    form_class = PerfilPJForm if tipo == 'PJ' else PerfilPFForm
+
     if request.method == 'POST':
-        if tipo == 'PJ':
-            form = PerfilPJForm(request.POST)
-        else:
-            form = PerfilPFForm(request.POST)
+        form = form_class(request.POST)
         if form.is_valid():
             perfil = form.save(commit=False)
             perfil.usuario = request.user
             perfil.save()
-            messages.success(request, "Cadastro complementar realizado com sucesso.")
+            messages.success(request, "Cadastro complementar concluído com sucesso.")
             if request.user.is_master:
                 return redirect('usuarios:dashboard_master')
             else:
                 return redirect('usuarios:dashboard')
     else:
-        if tipo == 'PJ':
-            form = PerfilPJForm()
-        else:
-            form = PerfilPFForm()
+        form = form_class()
+
     return render(request, 'usuarios/completar_cadastro.html', {'form': form})
 
-# Dashboard para usuários comum
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from protocolos.models import ProtocoloPF, ProtocoloPJ
-
+# Dashboard para usuários comuns
 @login_required
 def dashboard(request):
-    protocolos_pf = ProtocoloPF.objects.filter(usuario=request.user).order_by('-data_hora_lancamento')
-    protocolos_pj = ProtocoloPJ.objects.filter(usuario=request.user).order_by('-data_hora_lancamento')
+    if not request.user.is_approved:
+        return render(request, 'usuarios/nao_aprovado.html')
+    
+    # Verifica se o usuário possui perfil; caso contrário, redirecione para completar cadastro
+    if not hasattr(request.user, 'perfil'):
+        return redirect('usuarios:completar_cadastro')
+    
+    from protocolos.models import Protocolo
+    protocolos_usuario = Protocolo.objects.filter(usuario=request.user).order_by('-data_criacao')
 
-    # Combine os resultados
-    protocolos_usuario = list(protocolos_pf) + list(protocolos_pj)
-    protocolos_usuario.sort(key=lambda x: x.data_hora_lancamento, reverse=True)
-
-    return render(request, 'usuarios/dashboard.html', {
-        'protocolos_usuario': protocolos_usuario,
-    })
+    return render(request, 'usuarios/dashboard.html', {'protocolos_usuario': protocolos_usuario})
 
 # Dashboard para usuários master
 @login_required
 def dashboard_master(request):
     if not request.user.is_approved:
         return render(request, 'usuarios/nao_aprovado.html')
-    
+
     if request.user.is_master:
         cadastros_pendentes = Usuario.objects.filter(is_approved=False).count()
-        
-        # Obter os últimos 10 cadastros de usuários e protocolos
         ultimos_usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')[:10]
         ultimos_protocolos = Protocolo.objects.all().order_by('-data_criacao')[:10]
-        
+
         return render(request, 'usuarios/dashboard_master.html', {
             'cadastros_pendentes': cadastros_pendentes,
             'ultimos_usuarios': ultimos_usuarios,
             'ultimos_protocolos': ultimos_protocolos,
         })
-    
+
     return redirect('usuarios:dashboard')
 
 # Aprovação de usuários pendentes
 @login_required
 def aprovar_usuarios(request):
-    if request.user.is_authenticated and hasattr(request.user, 'is_master') and request.user.is_master:
-        usuarios_pendentes = Usuario.objects.filter(is_approved=False)
-        if request.method == 'POST':
-            user_id = request.POST.get('user_id')
-            approval_status = request.POST.get('approval_status')  # 'aprovar' ou 'rejeitar'
-            usuario = get_object_or_404(Usuario, id=user_id)
-            
-            if approval_status == 'aprovar':
-                cadastro_origem = request.POST.get('cadastro_origem')  # Deve ser 'PJ' ou 'PF'
-                if cadastro_origem not in ['PJ', 'PF']:
-                    messages.error(request, "Selecione uma opção válida para a origem do cadastro.")
-                    return redirect('usuarios:aprovar_usuarios')
-                
-                if cadastro_origem == 'PJ':
-                    # Se for externo (PJ), define automaticamente como usuário normal
-                    usuario.tipo = 'PJ'
-                    usuario.is_master = False
-                else:  # cadastro_origem == 'PF' (interno)
-                    usuario.tipo = 'PF'
-                    nivel = request.POST.get('nivel')  # Deve ser 'M' ou 'N'
-                    if nivel not in ['M', 'N']:
-                        messages.error(request, "Selecione um nível válido para usuário interno.")
-                        return redirect('usuarios:aprovar_usuarios')
-                    usuario.is_master = True if nivel == 'M' else False
-                usuario.is_approved = True
-                usuario.save()
-                if usuario.tipo == 'PJ':
-                    tipo_text = "Usuário Externo (PJ) - Normal"
-                else:
-                    tipo_text = "Usuário Interno (PF) - " + ("Master" if usuario.is_master else "Normal")
-                messages.success(request, f"Usuário {usuario.nome} aprovado como {tipo_text}.")
-            elif approval_status == 'rejeitar':
-                usuario.delete()
-                messages.success(request, f"Usuário {usuario.nome} rejeitado e excluído com sucesso.")
-            
-            return redirect('usuarios:aprovar_usuarios')
-        return render(request, 'usuarios/aprovar_usuarios.html', {'usuarios_pendentes': usuarios_pendentes})
-    return redirect('usuarios:login')
+    if not request.user.is_master:
+        return redirect('usuarios:dashboard')
+
+    usuarios_pendentes = Usuario.objects.filter(is_approved=False)
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        usuario = get_object_or_404(Usuario, id=user_id)
+        approval_status = request.POST.get('approval_status')
+
+        if approval_status == 'aprovar':
+            cadastro_origem = request.POST.get('cadastro_origem')
+            if cadastro_origem not in ['PJ', 'SP']:
+                messages.error(request, "Selecione um tipo válido para o usuário.")
+                return redirect('usuarios:aprovar_usuarios')
+
+            usuario.tipo = cadastro_origem
+            usuario.is_master = request.POST.get('nivel') == 'M' if cadastro_origem == 'SP' else False
+            usuario.is_approved = True
+            usuario.save()
+
+            messages.success(request, f"Usuário {usuario.nome} aprovado como {usuario.tipo}.")
+        elif approval_status == 'rejeitar':
+            usuario.delete()
+            messages.success(request, f"Usuário {usuario.nome} foi excluído.")
+
+        return redirect('usuarios:aprovar_usuarios')
+
+    return render(request, 'usuarios/aprovar_usuarios.html', {'usuarios_pendentes': usuarios_pendentes})
 
 # Exclusão de usuários aprovados (apenas para master)
 @login_required
-def excluir_usuarios(request, user_id=None):
-    """
-    Lista os usuários aprovados para exclusão com paginação.
-    Apenas usuários master podem acessar essa funcionalidade.
-    """
-    if request.user.is_authenticated and request.user.is_master:
-        usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')  # Ordena do mais recente para o mais antigo
-        paginator = Paginator(usuarios, 10)  # Exibir 10 usuários por página
+def excluir_usuarios(request):
+    if not request.user.is_master:
+        return redirect('usuarios:dashboard')
 
-        page_number = request.GET.get('page')
-        usuarios_paginados = paginator.get_page(page_number)
+    usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')
+    paginator = Paginator(usuarios, 10)
+    page_number = request.GET.get('page')
+    usuarios_paginados = paginator.get_page(page_number)
 
-        return render(request, 'usuarios/excluir_usuarios.html', {'usuarios_paginados': usuarios_paginados})
-    
-    return redirect('usuarios:login')
+    return render(request, 'usuarios/excluir_usuarios.html', {'usuarios_paginados': usuarios_paginados})
 
 @login_required
 def excluir_usuario(request, user_id):
-    """
-    Exclui um usuário específico se o usuário logado for um master.
-    """
-    if request.user.is_authenticated and request.user.is_master:
-        usuario = get_object_or_404(Usuario, id=user_id)
-        usuario.delete()
-        messages.success(request, f'Usuário {usuario.nome} foi excluído com sucesso.')
-        return redirect('usuarios:excluir_usuarios')
-    
-    return redirect('usuarios:login')
+    if not request.user.is_master:
+        return redirect('usuarios:dashboard')
+
+    usuario = get_object_or_404(Usuario, id=user_id)
+    usuario.delete()
+    messages.success(request, f'Usuário {usuario.nome} foi excluído com sucesso.')
+
+    return redirect('usuarios:excluir_usuarios')
 
 # Pesquisa de usuários para o dashboard master
 @login_required
 def pesquisa_usuarios(request):
-    query = request.GET.get('q')
-    if query:
-        usuarios = Usuario.objects.filter(nome__icontains=query)  # Ajuste o filtro conforme necessário
-    else:
-        usuarios = Usuario.objects.all()
+    if not request.user.is_master:
+        return redirect('usuarios:dashboard')
 
-    paginator = Paginator(usuarios, 10)  # Mostra 10 usuários por página
+    query = request.GET.get('q')
+    usuarios = Usuario.objects.filter(nome__icontains=query) if query else Usuario.objects.all()
+    paginator = Paginator(usuarios, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Obter os últimos 10 cadastros de usuários e protocolos
-    ultimos_usuarios = Usuario.objects.filter(is_approved=True).order_by('-id')[:10]
-    ultimos_protocolos = Protocolo.objects.all().order_by('-data_criacao')[:10]
-
-    return render(request, 'usuarios/dashboard_master.html', {
-        'usuarios_pesquisa': page_obj,
-        'ultimos_usuarios': ultimos_usuarios,
-        'ultimos_protocolos': ultimos_protocolos,
-    })
+    return render(request, 'usuarios/dashboard_master.html', {'usuarios_pesquisa': page_obj})
 
 # Logout de usuários
 @login_required

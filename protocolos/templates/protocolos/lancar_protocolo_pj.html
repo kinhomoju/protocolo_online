@@ -50,6 +50,20 @@
                                 Por favor, insira a descrição dos serviços.
                             </div>
                         </div>
+                        <div class="mb-3">
+                            <label for="{{ form.nome.id_for_label }}" class="form-label" style="font-weight: bold;">Nome</label>
+                            {{ form.nome|add_attr:"class:form-control" }}
+                            <div class="invalid-feedback">
+                                Por favor, insira o nome.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.endereco.id_for_label }}" class="form-label" style="font-weight: bold;">Endereço</label>
+                            {{ form.endereco|add_attr:"class:form-control" }}
+                            <div class="invalid-feedback">
+                                Por favor, insira o endereço.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

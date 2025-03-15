@@ -1,8 +1,6 @@
 {% extends "base_generic.html" %}
 {% load static %}
 
-{% load form_filters %}
-
 {% block content %}
 <div class="container mt-5">
     <!-- Informações da empresa -->
@@ -16,19 +14,40 @@
         </p>
     </div>
 
+    <!-- Exibição de mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
     <!-- Formulário de Login -->
     <div class="row justify-content-center">
-        <div class="col-md-3">
-            <form method="post" action="{% url 'usuarios:login' %}">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary w-100">Entrar</button>
-            </form>
-            <p class="text-center mt-3">
-                Não tem uma conta? <a href="{% url 'usuarios:cadastro' %}">Cadastre-se aqui</a>.
-            </p>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="text-center mb-3">Acesse sua conta</h4>
+                    <form method="post" action="{% url 'usuarios:login' %}">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group mb-3">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary w-100">Entrar</button>
+                    </form>
+                    <p class="text-center mt-3">
+                        Não tem uma conta? <a href="{% url 'usuarios:cadastro' %}">Cadastre-se aqui</a>.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
+
     <!-- Informações adicionais -->
     <div class="mt-5 text-center text-muted">
         <p>
